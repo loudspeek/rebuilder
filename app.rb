@@ -7,8 +7,6 @@ require 'English'
 
 # Mixin to provide a GitHub client and helpers.
 module Github
-  class SystemCallFail < StandardError; end
-
   def github
     @github ||= Octokit::Client.new(access_token: ENV['GITHUB_ACCESS_TOKEN'])
   end
@@ -16,11 +14,18 @@ module Github
   def with_git_repo(repo_name, options)
     repo = github.repository(repo_name)
     branch = options.fetch(:branch, 'master')
+    message = options.fetch(:message)
     with_tmp_dir do |dir|
-      system("git clone --quiet #{clone_url(repo.clone_url)} #{dir}")
-      system("git checkout -B #{branch}")
+      git = Git.clone(clone_url(repo.clone_url), '.')
+      git.config('user.name', github.login)
+      git.config('user.email', github.emails.first[:email])
+      git.branch(branch).checkout
       yield
-      git_commit_and_push(options.merge(branch: branch))
+      if git.status.changed.any? || git.status.untracked.any?
+        git.add
+        git.commit(message)
+        git.push
+      end
     end
   end
 
@@ -36,29 +41,14 @@ module Github
       Dir.chdir(tmp_dir, &block)
     end
   end
-
-  def git_config
-    @git_config ||= "-c user.name='#{github.login}' " \
-      "-c user.email='#{github.emails.first[:email]}'"
-  end
-
-  def git_commit_and_push(options)
-    branch_name = options.fetch(:branch)
-    message = options.fetch(:message)
-    system('git add .')
-    system(%(git #{git_config} commit --quiet --message="#{message}" || true))
-    system("git push --quiet origin #{branch_name}")
-  end
-
-  def system(*args)
-    fail SystemCallFail, "#{args} #{$CHILD_STATUS}" unless Kernel.system(*args)
-  end
 end
 
 # Rebuild a given country's legislature information
 class RebuilderJob
   include Sidekiq::Worker
   include Github
+
+  class SystemCallFail < StandardError; end
 
   def perform(country_slug, legislature_slug)
     branch_parts = [country_slug, legislature_slug, Time.now.to_i]
@@ -87,6 +77,10 @@ class RebuilderJob
 
   def everypolitician_data_repo
     ENV['EVERYPOLITICIAN_DATA_REPO']
+  end
+
+  def system(*args)
+    fail SystemCallFail, "#{args} #{$CHILD_STATUS}" unless Kernel.system(*args)
   end
 end
 
