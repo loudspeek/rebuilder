@@ -17,9 +17,9 @@ class RebuilderJob
     options = { branch: branch, message: message }
     with_git_repo(everypolitician_data_repo, options) do
       # Unset bundler environment variables so it uses the correct Gemfile etc.
-      system(env, 'bundle install')
+      run('bundle install')
       Dir.chdir(File.join('data', country_slug, legislature_slug)) do
-        system(env, 'bundle exec rake clobber default')
+        run('bundle exec rake clobber default')
       end
     end
   end
@@ -41,8 +41,10 @@ class RebuilderJob
 
   class SystemCallFail < StandardError; end
 
-  def system(*args)
-    fail SystemCallFail, "#{args} #{$CHILD_STATUS}" unless Kernel.system(*args)
+  def run(command)
+    unless Kernel.system(env, command)
+      fail SystemCallFail, "#{command} #{$CHILD_STATUS}"
+    end
   end
 end
 
