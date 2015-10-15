@@ -16,16 +16,20 @@ module Github
     branch = options.fetch(:branch, 'master')
     message = options.fetch(:message)
     with_tmp_dir do |dir|
-      git = Git.clone(clone_url(repo.clone_url), '.')
-      git.config('user.name', github.login)
-      git.config('user.email', github.emails.first[:email])
+      git = clone(clone_url(repo.clone_url))
       git.branch(branch).checkout
       yield
-      if git.status.changed.any? || git.status.untracked.any?
-        git.add
-        git.commit(message)
-        git.push
-      end
+      return unless git.status.changed.any? || git.status.untracked.any?
+      git.add
+      git.commit(message)
+      git.push
+    end
+  end
+
+  def clone(url)
+    @git ||= Git.clone(url, '.').tap do |g|
+      g.config('user.name', github.login)
+      g.config('user.email', github.emails.first[:email])
     end
   end
 
