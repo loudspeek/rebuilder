@@ -21,9 +21,25 @@ class RebuilderJob
         run('bundle exec rake clobber default')
       end
     end
+    if branch_exists?(branch)
+      github.create_pull_request(
+        everypolitician_data_repo,
+        'master',
+        branch,
+        "#{country_slug}: refresh data",
+        "Automated data refresh for #{country_slug} - #{legislature_slug}"
+      )
+    end
   end
 
   private
+
+  def branch_exists?(branch_name)
+    github.branch(everypolitician_data_repo, branch_name)
+    true
+  rescue Octokit::NotFound
+    false
+  end
 
   # Unset bundler environment variables so it uses the correct Gemfile etc.
   def env
