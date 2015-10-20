@@ -16,7 +16,6 @@ class RebuilderJob
     message = "#{country_slug}: Refresh from upstream changes"
     options = { branch: branch, message: message }
     with_git_repo(everypolitician_data_repo, options) do
-      # Unset bundler environment variables so it uses the correct Gemfile etc.
       run('bundle install')
       Dir.chdir(File.join('data', country_slug, legislature_slug)) do
         run('bundle exec rake clobber default')
@@ -26,6 +25,7 @@ class RebuilderJob
 
   private
 
+  # Unset bundler environment variables so it uses the correct Gemfile etc.
   def env
     @env ||= {
       'BUNDLE_GEMFILE' => nil,
