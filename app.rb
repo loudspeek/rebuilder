@@ -58,9 +58,9 @@ class RebuilderJob
   class SystemCallFail < StandardError; end
 
   def run(command)
-    unless Kernel.system(env, command)
-      fail SystemCallFail, "#{command} #{$CHILD_STATUS}"
-    end
+    output = IO.popen(env, command) { |io| io.read }
+    return output if $CHILD_STATUS.success?
+    fail SystemCallFail, "#{command} #{$CHILD_STATUS}"
   end
 end
 
