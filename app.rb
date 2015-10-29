@@ -5,6 +5,11 @@ Dotenv.load
 require 'active_support/core_ext'
 require 'English'
 
+EVERYPOLITICIAN_DATA_REPO = ENV.fetch(
+  'EVERYPOLITICIAN_DATA_REPO',
+  'everypolitician/everypolitician-data'
+)
+
 # Rebuild a given country's legislature information
 class RebuilderJob
   include Sidekiq::Worker
@@ -16,35 +21,21 @@ class RebuilderJob
     message = "#{country_slug}: Refresh from upstream changes"
     options = { branch: branch, message: message }
     output = nil
-    with_git_repo(everypolitician_data_repo, options) do
+    with_git_repo(EVERYPOLITICIAN_DATA_REPO, options) do
       run('bundle install')
       Dir.chdir(File.join('data', country_slug, legislature_slug)) do
         output = run('bundle exec rake clobber default 2>&1')
       end
     end
-    if branch_exists?(branch)
-      api_key = ERB::Util.url_encode(ENV['MORPH_API_KEY'])
-      output = output.gsub(api_key, 'REDACTED')
-      body = "Automated data refresh for #{country_slug} - #{legislature_slug}" \
-        "\n\n#### Output\n\n```\n#{output.uncolorize}\n```"
-      github.create_pull_request(
-        everypolitician_data_repo,
-        'master',
-        branch,
-        "#{country_slug}: refresh data",
-        body
-      )
-    end
+    api_key = ERB::Util.url_encode(ENV['MORPH_API_KEY'])
+    output = output.gsub(api_key, 'REDACTED')
+    title = "#{country_slug}: refresh data"
+    body = "Automated data refresh for #{country_slug} - #{legislature_slug}" \
+      "\n\n#### Output\n\n```\n#{output.uncolorize}\n```"
+    CreatePullRequestJob.perform_async(branch, title, body)
   end
 
   private
-
-  def branch_exists?(branch_name)
-    github.branch(everypolitician_data_repo, branch_name)
-    true
-  rescue Octokit::NotFound
-    false
-  end
 
   # Unset bundler environment variables so it uses the correct Gemfile etc.
   def env
@@ -56,16 +47,35 @@ class RebuilderJob
     }
   end
 
-  def everypolitician_data_repo
-    ENV['EVERYPOLITICIAN_DATA_REPO']
-  end
-
   class SystemCallFail < StandardError; end
 
   def run(command)
     output = IO.popen(env, command) { |io| io.read }
     return output if $CHILD_STATUS.success?
     fail SystemCallFail, "#{command} #{$CHILD_STATUS}"
+  end
+end
+
+class CreatePullRequestJob
+  include Sidekiq::Worker
+  include Everypoliticianbot::Github
+
+  def perform(branch, title, body)
+    return unless branch_exists?(branch)
+    github.create_pull_request(
+      EVERYPOLITICIAN_DATA_REPO,
+      'master',
+      branch,
+      title,
+      body
+    )
+  end
+
+  def branch_exists?(branch_name)
+    github.branch(EVERYPOLITICIAN_DATA_REPO, branch_name)
+    true
+  rescue Octokit::NotFound
+    false
   end
 end
 
