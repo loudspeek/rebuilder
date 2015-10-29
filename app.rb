@@ -29,6 +29,8 @@ class RebuilderJob
     end
     api_key = ERB::Util.url_encode(ENV['MORPH_API_KEY'])
     output = output.gsub(api_key, 'REDACTED')
+    # Only use last 64k of output
+    output = output[-64_000..-1] || output
     title = "#{country_slug}: refresh data"
     body = "Automated data refresh for #{country_slug} - #{legislature_slug}" \
       "\n\n#### Output\n\n```\n#{output.uncolorize}\n```"
