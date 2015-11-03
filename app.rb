@@ -54,6 +54,7 @@ class RebuilderJob
   def run(command)
     output = IO.popen(env, command) { |io| io.read }
     return output if $CHILD_STATUS.success?
+    warn output
     fail SystemCallFail, "#{command} #{$CHILD_STATUS}"
   end
 end
