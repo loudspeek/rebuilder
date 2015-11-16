@@ -10,3 +10,7 @@ gem 'puma'
 gem 'activesupport', require: 'active_support'
 gem 'everypoliticianbot', github: 'everypolitician/everypoliticianbot'
 gem 'colorize'
+
+# Report exceptions to rollbar.com
+gem 'rollbar', '~> 2.4.0'
+gem 'oj', '~> 2.12.14'

@@ -5,6 +5,19 @@ Dotenv.load
 require 'active_support/core_ext'
 require 'English'
 
+configure :production do
+  require 'rollbar/middleware/sinatra'
+  require 'rollbar/sidekiq'
+
+  use Rollbar::Middleware::Sinatra
+
+  Rollbar.configure do |config|
+    config.access_token = ENV['ROLLBAR_ACCESS_TOKEN']
+    config.disable_monkey_patch = true
+    config.environment = settings.environment
+  end
+end
+
 EVERYPOLITICIAN_DATA_REPO = ENV.fetch(
   'EVERYPOLITICIAN_DATA_REPO',
   'everypolitician/everypolitician-data'

@@ -43,9 +43,11 @@ GEM
     i18n (0.7.0)
     json (1.8.3)
     minitest (5.8.1)
+    multi_json (1.11.2)
     multipart-post (2.0.0)
     octokit (4.1.1)
       sawyer (~> 0.6.0, >= 0.5.3)
+    oj (2.12.14)
     puma (2.14.0)
     rack (1.6.4)
     rack-protection (1.5.3)
@@ -53,6 +55,8 @@ GEM
     redis (3.2.1)
     redis-namespace (1.5.2)
       redis (~> 3.0, >= 3.0.4)
+    rollbar (2.4.0)
+      multi_json
     sawyer (0.6.0)
       addressable (~> 2.3.5)
       faraday (~> 0.8, < 0.10)
@@ -82,7 +86,9 @@ DEPENDENCIES
   dotenv
   everypoliticianbot!
   octokit
+  oj (~> 2.12.14)
   puma
+  rollbar (~> 2.4.0)
   sidekiq
   sinatra
 
