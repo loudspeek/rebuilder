@@ -39,6 +39,7 @@ class RebuilderJob
       Dir.chdir(File.join('data', country_slug, legislature_slug)) do
         output = run('bundle exec rake clobber default 2>&1')
       end
+      run('bundle exec rake countries.json')
     end
     api_key = ERB::Util.url_encode(ENV['MORPH_API_KEY'])
     output = output.gsub(api_key, 'REDACTED')
