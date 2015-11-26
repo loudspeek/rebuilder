@@ -59,7 +59,8 @@ class RebuilderJob
       'BUNDLE_GEMFILE' => nil,
       'BUNDLE_BIN_PATH' => nil,
       'RUBYOPT' => nil,
-      'RUBYLIB' => nil
+      'RUBYLIB' => nil,
+      'NOKOGIRI_USE_SYSTEM_LIBRARIES' => '1'
     }
   end
 
