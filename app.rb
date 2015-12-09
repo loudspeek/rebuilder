@@ -78,7 +78,10 @@ class CreatePullRequestJob
   include Everypoliticianbot::Github
 
   def perform(branch, title, body)
-    return unless branch_exists?(branch)
+    unless branch_exists?(branch)
+      warn "Couldn't find branch #{branch}. Aborting."
+      return
+    end
     github.create_pull_request(
       EVERYPOLITICIAN_DATA_REPO,
       'master',
