@@ -52,6 +52,8 @@ GEM
     rack (1.6.4)
     rack-protection (1.5.3)
       rack
+    rack-test (0.6.3)
+      rack (>= 1.0)
     redis (3.2.1)
     redis-namespace (1.5.2)
       redis (~> 3.0, >= 3.0.4)
@@ -85,9 +87,11 @@ DEPENDENCIES
   colorize
   dotenv
   everypoliticianbot!
+  minitest
   octokit
   oj (~> 2.12.14)
   puma
+  rack-test
   rollbar (~> 2.4.0)
   sidekiq
   sinatra
