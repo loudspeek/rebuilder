@@ -28,7 +28,7 @@ class RebuilderJob
   include Sidekiq::Worker
   include Everypoliticianbot::Github
 
-  def perform(country_slug, legislature_slug)
+  def perform(country_slug, legislature_slug, source = nil)
     country, legislature = Everypolitician.country_legislature(
       country_slug,
       legislature_slug
@@ -37,11 +37,11 @@ class RebuilderJob
     branch = branch_parts.join('-').parameterize
     message = "#{country.name}: Refresh from upstream changes"
     options = { branch: branch, message: message }
-    output = nil
+    output = ''
     with_git_repo(EVERYPOLITICIAN_DATA_REPO, options) do
       run('bundle install')
       Dir.chdir(File.dirname(legislature.popolo)) do
-        output = run('bundle exec rake clobber default 2>&1')
+        output = run('bundle exec rake clobber default 2>&1', 'REBUILD_SOURCE' => source)
       end
     end
     api_key = ERB::Util.url_encode(ENV['MORPH_API_KEY'])
@@ -69,8 +69,8 @@ class RebuilderJob
 
   class SystemCallFail < StandardError; end
 
-  def run(command)
-    output = IO.popen(env, command) { |io| io.read }
+  def run(command, extra_env = {})
+    output = IO.popen(env.merge(extra_env), command) { |io| io.read }
     return output if $CHILD_STATUS.success?
     warn output
     fail SystemCallFail, "#{command} #{$CHILD_STATUS}"
@@ -118,6 +118,7 @@ end
 post '/' do
   country = params[:country]
   legislature = params[:legislature]
-  RebuilderJob.perform_async(country, legislature)
-  "Queued rebuild for #{country} #{legislature}\n"
+  source = params[:source]
+  RebuilderJob.perform_async(country, legislature, source)
+  "Queued rebuild for country=#{country} legislature=#{legislature} source=#{source}\n"
 end
