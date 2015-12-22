@@ -41,7 +41,11 @@ class RebuilderJob
     with_git_repo(EVERYPOLITICIAN_DATA_REPO, options) do
       run('bundle install')
       Dir.chdir(File.dirname(legislature.popolo)) do
-        output = run('bundle exec rake clobber default 2>&1', 'REBUILD_SOURCE' => source)
+        if source
+          output = run('bundle exec rake clean default 2>&1', 'REBUILD_SOURCE' => source)
+        else
+          output = run('bundle exec rake clobber default 2>&1')
+        end
       end
     end
     if ENV.key?('MORPH_API_KEY')
