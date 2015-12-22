@@ -106,6 +106,7 @@ class CreatePullRequestJob
 end
 
 post '/:country/:legislature' do |country_path, legislature_path|
+  logger.warn "Legacy route used: /#{country_path}/#{legislature_path}. Please use / with params"
   countries = Everypolitician::CountriesJson.new
   countries.each do |country|
     country[:legislatures].each do |legislature|
