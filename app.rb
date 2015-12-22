@@ -44,8 +44,10 @@ class RebuilderJob
         output = run('bundle exec rake clobber default 2>&1', 'REBUILD_SOURCE' => source)
       end
     end
-    api_key = ERB::Util.url_encode(ENV['MORPH_API_KEY'])
-    output = output.gsub(api_key, 'REDACTED').uncolorize
+    if ENV.key?('MORPH_API_KEY')
+      api_key = ERB::Util.url_encode(ENV['MORPH_API_KEY'])
+      output = output.gsub(api_key, 'REDACTED').uncolorize
+    end
     # Only use last 64k of output
     output = output[-64_000..-1] || output
     title = "#{country.name}: refresh data"
