@@ -11,6 +11,7 @@ gem 'activesupport', require: 'active_support'
 gem 'everypoliticianbot', github: 'everypolitician/everypoliticianbot'
 gem 'colorize'
 gem 'rake'
+gem 'everypolitician'
 
 group :test do
   gem 'minitest'
