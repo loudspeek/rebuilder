@@ -84,14 +84,16 @@ class RebuilderJob
 end
 
 class CreatePullRequestJob
+  class Error < StandardError; end
+
   include Sidekiq::Worker
   include Everypoliticianbot::Github
 
+  # Only retry 3 times before moving to dead job queue
+  sidekiq_options retry: 3
+
   def perform(branch, title, body)
-    unless branch_exists?(branch)
-      warn "Couldn't find branch #{branch}. Aborting."
-      return
-    end
+    fail Error, "Couldn't find branch: #{branch}" unless branch_exists?(branch)
     github.create_pull_request(
       EVERYPOLITICIAN_DATA_REPO,
       'master',
