@@ -16,6 +16,9 @@ gem 'everypolitician'
 group :test do
   gem 'minitest'
   gem 'rack-test'
+  gem 'minitest-around'
+  gem 'vcr'
+  gem 'webmock'
 end
 
 # Report exceptions to rollbar.com
