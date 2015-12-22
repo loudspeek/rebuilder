@@ -70,7 +70,7 @@ class RebuilderJob
   class SystemCallFail < StandardError; end
 
   def run(command, extra_env = {})
-    output = IO.popen(env.merge(extra_env), command) { |io| io.read }
+    output = IO.popen(env.merge(extra_env), command, &:read)
     return output if $CHILD_STATUS.success?
     warn output
     fail SystemCallFail, "#{command} #{$CHILD_STATUS}"

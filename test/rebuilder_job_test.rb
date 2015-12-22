@@ -2,7 +2,7 @@ require 'test_helper'
 
 describe RebuilderJob do
   class RebuilderJob
-    def with_git_repo(repo, options, &block)
+    def with_git_repo(_repo, _options, &block)
       Dir.mktmpdir do |dir|
         Dir.chdir(dir) do
           FileUtils.mkdir_p('data/Australia/Senate')
@@ -11,7 +11,7 @@ describe RebuilderJob do
       end
     end
 
-    def run(*args)
+    def run(*_args)
       'Build output'
     end
   end
