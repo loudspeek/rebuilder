@@ -28,24 +28,34 @@ class RebuilderJob
   include Sidekiq::Worker
   include Everypoliticianbot::Github
 
-  def perform(country_slug, legislature_slug)
+  def perform(country_slug, legislature_slug, source = nil)
+    country, legislature = Everypolitician.country_legislature(
+      country_slug,
+      legislature_slug
+    )
     branch_parts = [country_slug, legislature_slug, Time.now.to_i]
     branch = branch_parts.join('-').parameterize
-    message = "#{country_slug}: Refresh from upstream changes"
+    message = "#{country.name}: Refresh from upstream changes"
     options = { branch: branch, message: message }
-    output = nil
+    output = ''
     with_git_repo(EVERYPOLITICIAN_DATA_REPO, options) do
       run('bundle install')
-      Dir.chdir(File.join('data', country_slug, legislature_slug)) do
-        output = run('bundle exec rake clobber default 2>&1')
+      Dir.chdir(File.dirname(legislature.popolo)) do
+        if source
+          output = run('bundle exec rake clean default 2>&1', 'REBUILD_SOURCE' => source)
+        else
+          output = run('bundle exec rake clobber default 2>&1')
+        end
       end
     end
-    api_key = ERB::Util.url_encode(ENV['MORPH_API_KEY'])
-    output = output.gsub(api_key, 'REDACTED').uncolorize
+    if ENV.key?('MORPH_API_KEY')
+      api_key = ERB::Util.url_encode(ENV['MORPH_API_KEY'])
+      output = output.gsub(api_key, 'REDACTED').uncolorize
+    end
     # Only use last 64k of output
     output = output[-64_000..-1] || output
-    title = "#{country_slug.gsub('_', ' ')}: refresh data"
-    body = "Automated data refresh for #{country_slug} - #{legislature_slug}" \
+    title = "#{country.name}: refresh data"
+    body = "Automated data refresh for #{country.name} - #{legislature.name}" \
       "\n\n#### Output\n\n```\n#{output}\n```"
     CreatePullRequestJob.perform_async(branch, title, body)
   end
@@ -65,8 +75,8 @@ class RebuilderJob
 
   class SystemCallFail < StandardError; end
 
-  def run(command)
-    output = IO.popen(env, command) { |io| io.read }
+  def run(command, extra_env = {})
+    output = IO.popen(env.merge(extra_env), command, &:read)
     return output if $CHILD_STATUS.success?
     warn output
     fail SystemCallFail, "#{command} #{$CHILD_STATUS}"
@@ -99,7 +109,23 @@ class CreatePullRequestJob
   end
 end
 
-post '/:country/:legislature' do |country, legislature|
-  RebuilderJob.perform_async(country, legislature)
-  "Queued rebuild for #{country} #{legislature}\n"
+post '/:country/:legislature' do |country_path, legislature_path|
+  logger.warn "Legacy route used: /#{country_path}/#{legislature_path}. Please use / with params"
+  countries = Everypolitician::CountriesJson.new
+  countries.each do |country|
+    country[:legislatures].each do |legislature|
+      if File.dirname(legislature[:popolo]) == "data/#{country_path}/#{legislature_path}"
+        RebuilderJob.perform_async(country[:slug], legislature[:slug])
+        return "Queued rebuild for #{country[:slug]} #{legislature[:slug]}\n"
+      end
+    end
+  end
+end
+
+post '/' do
+  country = params[:country]
+  legislature = params[:legislature]
+  source = params[:source]
+  RebuilderJob.perform_async(country, legislature, source)
+  "Queued rebuild for country=#{country} legislature=#{legislature} source=#{source}\n"
 end

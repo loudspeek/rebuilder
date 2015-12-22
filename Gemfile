@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-ruby '2.2.2'
+ruby '2.2.3'
 
 gem 'sinatra'
 gem 'dotenv'
@@ -10,6 +10,16 @@ gem 'puma'
 gem 'activesupport', require: 'active_support'
 gem 'everypoliticianbot', github: 'everypolitician/everypoliticianbot'
 gem 'colorize'
+gem 'rake'
+gem 'everypolitician'
+
+group :test do
+  gem 'minitest'
+  gem 'rack-test'
+  gem 'minitest-around'
+  gem 'vcr'
+  gem 'webmock'
+end
 
 # Report exceptions to rollbar.com
 gem 'rollbar', '~> 2.4.0'
