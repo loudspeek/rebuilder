@@ -90,7 +90,7 @@ class CreatePullRequestJob
   include Everypoliticianbot::Github
 
   # Only retry 3 times before moving to dead job queue
-  sidekiq_options retry: 3
+  sidekiq_options retry: 3, dead: false
 
   def perform(branch, title, body)
     fail Error, "Couldn't find branch: #{branch}" unless branch_exists?(branch)
