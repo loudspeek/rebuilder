@@ -29,14 +29,18 @@ class RebuilderJob
   include Everypoliticianbot::Github
 
   def perform(country_slug, legislature_slug)
+    country, legislature = Everypolitician.country_legislature(
+      country_slug,
+      legislature_slug
+    )
     branch_parts = [country_slug, legislature_slug, Time.now.to_i]
     branch = branch_parts.join('-').parameterize
-    message = "#{country_slug}: Refresh from upstream changes"
+    message = "#{country.name}: Refresh from upstream changes"
     options = { branch: branch, message: message }
     output = nil
     with_git_repo(EVERYPOLITICIAN_DATA_REPO, options) do
       run('bundle install')
-      Dir.chdir(File.join('data', country_slug, legislature_slug)) do
+      Dir.chdir(File.dirname(legislature.popolo)) do
         output = run('bundle exec rake clobber default 2>&1')
       end
     end
@@ -44,8 +48,8 @@ class RebuilderJob
     output = output.gsub(api_key, 'REDACTED').uncolorize
     # Only use last 64k of output
     output = output[-64_000..-1] || output
-    title = "#{country_slug.gsub('_', ' ')}: refresh data"
-    body = "Automated data refresh for #{country_slug} - #{legislature_slug}" \
+    title = "#{country.name}: refresh data"
+    body = "Automated data refresh for #{country.name} - #{legislature.name}" \
       "\n\n#### Output\n\n```\n#{output}\n```"
     CreatePullRequestJob.perform_async(branch, title, body)
   end
@@ -99,7 +103,21 @@ class CreatePullRequestJob
   end
 end
 
-post '/:country/:legislature' do |country, legislature|
+post '/:country/:legislature' do |country_path, legislature_path|
+  countries = Everypolitician::CountriesJson.new
+  countries.each do |country|
+    country[:legislatures].each do |legislature|
+      if File.dirname(legislature[:popolo]) == "data/#{country_path}/#{legislature_path}"
+        RebuilderJob.perform_async(country[:slug], legislature[:slug])
+        return "Queued rebuild for #{country[:slug]} #{legislature[:slug]}\n"
+      end
+    end
+  end
+end
+
+post '/' do
+  country = params[:country]
+  legislature = params[:legislature]
   RebuilderJob.perform_async(country, legislature)
   "Queued rebuild for #{country} #{legislature}\n"
 end
