@@ -89,7 +89,7 @@ class CreatePullRequestJob
   include Sidekiq::Worker
   include Everypoliticianbot::Github
 
-  # Only retry 3 times before moving to dead job queue
+  # Only retry 3 times, then discard the job
   sidekiq_options retry: 3, dead: false
 
   def perform(branch, title, body)
