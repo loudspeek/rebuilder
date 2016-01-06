@@ -54,7 +54,7 @@ class RebuilderJob
     end
     # Only use last 64k of output
     output = output[-64_000..-1] || output
-    title = "#{country.name}: refresh data"
+    title = "#{country.name} (#{legislature.name}): refresh data"
     body = "Automated data refresh for #{country.name} - #{legislature.name}" \
       "\n\n#### Output\n\n```\n#{output}\n```"
     CreatePullRequestJob.perform_async(branch, title, body)

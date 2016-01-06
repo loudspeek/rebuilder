@@ -23,7 +23,7 @@ describe RebuilderJob do
     assert_equal 1, CreatePullRequestJob.jobs.size
     args = CreatePullRequestJob.jobs.first['args']
     assert args[0].match(/australia-senate-\d+/)
-    assert_equal 'Australia: refresh data', args[1]
+    assert_equal 'Australia (Senate): refresh data', args[1]
     expected = <<-EXPECTED.chomp
 Automated data refresh for Australia - Senate
 
