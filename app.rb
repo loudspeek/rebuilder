@@ -93,7 +93,11 @@ class CreatePullRequestJob
   sidekiq_options retry: 3, dead: false
 
   def perform(branch, title, body)
-    fail Error, "Couldn't find branch: #{branch}" unless branch_exists?(branch)
+    # We are only raising this error so Sidekiq retries, so no need to report
+    # to Rollbar.
+    Rollbar.silenced do
+      fail Error, "Couldn't find branch: #{branch}" unless branch_exists?(branch)
+    end
     changes = github.compare(EVERYPOLITICIAN_DATA_REPO, 'master', branch)
     changed_files = changes[:files].map { |f| File.basename(f[:filename]) }
     unless changed_files.include?('ep-popolo-v1.0.json')
