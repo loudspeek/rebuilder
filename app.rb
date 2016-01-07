@@ -93,13 +93,13 @@ class CreatePullRequestJob
   sidekiq_options retry: 3, dead: false
 
   def perform(branch, title, body)
+    fail Error, "Couldn't find branch: #{branch}" unless branch_exists?(branch)
     changes = github.compare(EVERYPOLITICIAN_DATA_REPO, 'master', branch)
     changed_files = changes[:files].map { |f| File.basename(f[:filename]) }
     unless changed_files.include?('ep-popolo-v1.0.json')
       warn "No change to ep-popolo-v1.0.json detected, skipping"
       return
     end
-    fail Error, "Couldn't find branch: #{branch}" unless branch_exists?(branch)
     github.create_pull_request(
       EVERYPOLITICIAN_DATA_REPO,
       'master',
