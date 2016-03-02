@@ -73,13 +73,11 @@ class RebuilderJob
     }
   end
 
-  class SystemCallFail < StandardError; end
-
   def run(command, extra_env = {})
     output = IO.popen(env.merge(extra_env), command, &:read)
     return output if $CHILD_STATUS.success?
     Rollbar.warn(command, output)
-    fail SystemCallFail, "#{command} #{$CHILD_STATUS}"
+    warn "#{command} #{$CHILD_STATUS}"
   end
 end
 
