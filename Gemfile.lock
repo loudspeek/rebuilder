@@ -64,7 +64,7 @@ GEM
     redis (3.2.1)
     redis-namespace (1.5.2)
       redis (~> 3.0, >= 3.0.4)
-    rollbar (2.4.0)
+    rollbar (2.8.0)
       multi_json
     safe_yaml (1.0.4)
     sawyer (0.6.0)
@@ -108,11 +108,11 @@ DEPENDENCIES
   puma
   rack-test
   rake
-  rollbar (~> 2.4.0)
+  rollbar (~> 2.8.0)
   sidekiq
   sinatra
   vcr
   webmock
 
 BUNDLED WITH
-   1.10.6
+   1.11.2
