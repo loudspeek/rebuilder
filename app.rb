@@ -38,15 +38,20 @@ class RebuilderJob
     message = "#{country.name}: Refresh from upstream changes"
     options = { branch: branch, message: message }
     output = ''
+    child_status = nil
     with_git_repo(EVERYPOLITICIAN_DATA_REPO, options) do
       run('bundle install')
       Dir.chdir(File.dirname(legislature.popolo)) do
         if source
-          output = run('bundle exec rake clean default 2>&1', 'REBUILD_SOURCE' => source)
+          output, child_status = run('bundle exec rake clean default 2>&1', 'REBUILD_SOURCE' => source)
         else
-          output = run('bundle exec rake clobber default 2>&1')
+          output, child_status = run('bundle exec rake clobber default 2>&1')
         end
       end
+    end
+    unless child_status.success?
+      Rollbar.warn("Failed to build #{country.name} - #{legislature.name}\n\n" + output)
+      return
     end
     if ENV.key?('MORPH_API_KEY')
       api_key = ERB::Util.url_encode(ENV['MORPH_API_KEY'])
@@ -75,9 +80,7 @@ class RebuilderJob
 
   def run(command, extra_env = {})
     output = IO.popen(env.merge(extra_env), command, &:read)
-    return output if $CHILD_STATUS.success?
-    Rollbar.warn(command, output)
-    warn "#{command} #{$CHILD_STATUS}"
+    [output, $CHILD_STATUS]
   end
 end
 
