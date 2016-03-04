@@ -1,5 +1,7 @@
 require 'test_helper'
 
+ChildStatus = Struct.new(:success?)
+
 describe RebuilderJob do
   class RebuilderJob
     def with_git_repo(_repo, _options, &block)
@@ -12,7 +14,7 @@ describe RebuilderJob do
     end
 
     def run(*_args)
-      'Build output'
+      ['Build output', ChildStatus.new(true)]
     end
   end
 
