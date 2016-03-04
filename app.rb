@@ -50,7 +50,7 @@ class RebuilderJob
       end
     end
     unless child_status.success?
-      Rollbar.warn("Failed to build #{country.name} - #{legislature.name}\n\n" + output)
+      Rollbar.error("Failed to build #{country.name} - #{legislature.name}\n\n" + output)
       return
     end
     if ENV.key?('MORPH_API_KEY')
