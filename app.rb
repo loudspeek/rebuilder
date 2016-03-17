@@ -68,7 +68,11 @@ class RebuilderJob
       key = "body:#{branch}"
       conn.set(key, body)
       conn.expire(key, 1.hour)
-      CreatePullRequestJob.perform_async(branch, title, key)
+
+      # Wait so the branch is available through GitHub's API.
+      # If the job executes immediately then the branch may not
+      # be visible yet.
+      CreatePullRequestJob.perform_in(1.minute, branch, title, key)
     end
   end
 
@@ -101,10 +105,10 @@ class CreatePullRequestJob
   sidekiq_options retry: 3, dead: false
 
   def perform(branch, title, body_key)
-    # We are only raising this error so Sidekiq retries, so no need to report
-    # to Rollbar.
-    Rollbar.silenced do
-      fail Error, "Couldn't find branch: #{branch}" unless branch_exists?(branch)
+    # The branch won't exist if there were no changes when the rebuild was run.
+    unless branch_exists?
+      warn "Couldn't find branch: #{branch}"
+      return
     end
     changes = github.compare(EVERYPOLITICIAN_DATA_REPO, 'master', branch)
     changed_files = changes[:files].map { |f| File.basename(f[:filename]) }
