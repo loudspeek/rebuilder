@@ -106,7 +106,7 @@ class CreatePullRequestJob
 
   def perform(branch, title, body_key)
     # The branch won't exist if there were no changes when the rebuild was run.
-    unless branch_exists?
+    unless branch_exists?(branch)
       warn "Couldn't find branch: #{branch}"
       return
     end
