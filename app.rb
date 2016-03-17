@@ -15,6 +15,8 @@ configure :production do
     config.access_token = ENV['ROLLBAR_ACCESS_TOKEN']
     config.disable_monkey_patch = true
     config.environment = settings.environment
+    config.framework = "Sinatra: #{Sinatra::VERSION}"
+    config.root = Dir.pwd
   end
 end
 
