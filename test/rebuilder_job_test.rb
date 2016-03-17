@@ -35,6 +35,7 @@ Automated data refresh for Australia - Senate
 Build output
 ```
     EXPECTED
-    assert_equal expected, args[2]
+    assert_equal expected, Sidekiq.redis { |conn| conn.get("body:#{args[0]}") }
+    Sidekiq.redis { |conn| conn.del("body:#{args[0]}") }
   end
 end

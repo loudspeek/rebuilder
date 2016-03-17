@@ -64,7 +64,12 @@ class RebuilderJob
     title = "#{country.name} (#{legislature.name}): refresh data"
     body = "Automated data refresh for #{country.name} - #{legislature.name}" \
       "\n\n#### Output\n\n```\n#{output}\n```"
-    CreatePullRequestJob.perform_async(branch, title, body)
+    Sidekiq.redis do |conn|
+      key = "body:#{branch}"
+      conn.set(key, body)
+      conn.expire(key, 1.hour)
+      CreatePullRequestJob.perform_async(branch, title, key)
+    end
   end
 
   private
@@ -95,7 +100,7 @@ class CreatePullRequestJob
   # Only retry 3 times, then discard the job
   sidekiq_options retry: 3, dead: false
 
-  def perform(branch, title, body)
+  def perform(branch, title, body_key)
     # We are only raising this error so Sidekiq retries, so no need to report
     # to Rollbar.
     Rollbar.silenced do
@@ -107,6 +112,7 @@ class CreatePullRequestJob
       warn "No change to ep-popolo-v1.0.json detected, skipping"
       return
     end
+    body = Sidekiq.redis { |conn| conn.get(body_key) }
     github.create_pull_request(
       EVERYPOLITICIAN_DATA_REPO,
       'master',
