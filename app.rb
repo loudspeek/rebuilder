@@ -117,6 +117,7 @@ class CreatePullRequestJob
       return
     end
     body = Sidekiq.redis { |conn| conn.get(body_key) }
+    body ||= "Output of build no longer available"
     github.create_pull_request(
       EVERYPOLITICIAN_DATA_REPO,
       'master',
