@@ -67,7 +67,7 @@ class RebuilderJob
     Sidekiq.redis do |conn|
       key = "body:#{branch}"
       conn.set(key, body)
-      conn.expire(key, 1.hour)
+      conn.expire(key, 6.hours)
 
       # Wait so the branch is available through GitHub's API.
       # If the job executes immediately then the branch may not
