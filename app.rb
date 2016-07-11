@@ -102,7 +102,7 @@ class CreatePullRequestJob
   include Everypoliticianbot::Github
 
   # Only retry 3 times, then discard the job
-  sidekiq_options retry: 3, dead: false
+  sidekiq_options retry: 3, dead: false, queue: 'pull_requests'
 
   def perform(branch, title, body_key)
     # The branch won't exist if there were no changes when the rebuild was run.
