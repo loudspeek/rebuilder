@@ -42,7 +42,7 @@ class RebuilderJob
     output = ''
     child_status = nil
     with_git_repo(EVERYPOLITICIAN_DATA_REPO, options) do
-      run('bundle install --quiet --jobs 4')
+      run('bundle install --quiet --jobs 4 --without test')
       Dir.chdir(File.dirname(legislature.popolo)) do
         if source
           output, child_status = run('bundle exec rake clean default 2>&1', 'REBUILD_SOURCE' => source)
