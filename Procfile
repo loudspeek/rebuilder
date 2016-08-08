@@ -1,2 +1,2 @@
 web: bundle exec puma --threads 5:5 --port $PORT
-worker: bundle exec sidekiq -r ./app.rb -c 1 -q default -q pull_requests
+worker: bundle exec sidekiq -r ./app.rb -c 1 -q pull_requests -q default
