@@ -61,6 +61,11 @@ class RebuilderJob
         end
       end
     end
+
+    with_git_repo.commit_changes_to_branch(branch, "Refresh countries.json") do
+      run('bundle exec rake countries.json')
+    end
+
     unless child_status && child_status.success?
       Rollbar.error("Failed to build #{country.name} - #{legislature.name}\n\n" + output)
       return
