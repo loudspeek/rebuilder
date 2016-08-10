@@ -20,6 +20,18 @@ configure :production do
   end
 end
 
+def github
+  @github ||= Octokit::Client.new(
+    access_token: github_access_token
+  )
+end
+
+def github_access_token
+  @github_access_token ||= ENV.fetch('GITHUB_ACCESS_TOKEN')
+rescue KeyError
+  abort 'Please set GITHUB_ACCESS_TOKEN in the environment before running'
+end
+
 EVERYPOLITICIAN_DATA_REPO = ENV.fetch(
   'EVERYPOLITICIAN_DATA_REPO',
   'everypolitician/everypolitician-data'
@@ -28,7 +40,6 @@ EVERYPOLITICIAN_DATA_REPO = ENV.fetch(
 # Rebuild a given country's legislature information
 class RebuilderJob
   include Sidekiq::Worker
-  include Everypoliticianbot::Github
 
   def perform(country_slug, legislature_slug, source = nil)
     country, legislature = Everypolitician.country_legislature(
@@ -38,10 +49,9 @@ class RebuilderJob
     branch_parts = [country_slug, legislature_slug, Time.now.to_i]
     branch = branch_parts.join('-').parameterize
     message = "#{country.name}: Refresh from upstream changes"
-    options = { branch: branch, message: message }
     output = ''
     child_status = nil
-    with_git_repo(EVERYPOLITICIAN_DATA_REPO, options) do
+    with_git_repo.commit_changes_to_branch(branch, message) do
       run('bundle install --quiet --jobs 4 --without test')
       Dir.chdir(File.dirname(legislature.popolo)) do
         if source
@@ -78,6 +88,25 @@ class RebuilderJob
 
   private
 
+  def with_git_repo
+    @with_git_repo ||= WithGitRepo.new(
+      clone_url: clone_url,
+      user_name: github.login,
+      user_email: github.emails.first[:email]
+    )
+  end
+
+  def clone_url
+    @clone_url ||= URI.parse(repo.clone_url).tap do |repo_clone_url|
+      repo_clone_url.user = github.login
+      repo_clone_url.password = github.access_token
+    end
+  end
+
+  def repo
+    @repo ||= github.repository(EVERYPOLITICIAN_DATA_REPO)
+  end
+
   # Unset bundler environment variables so it uses the correct Gemfile etc.
   def env
     @env ||= {
@@ -99,7 +128,6 @@ class CreatePullRequestJob
   class Error < StandardError; end
 
   include Sidekiq::Worker
-  include Everypoliticianbot::Github
 
   # Only retry 3 times, then discard the job
   sidekiq_options retry: 3, dead: false, queue: 'pull_requests'
