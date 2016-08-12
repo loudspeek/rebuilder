@@ -63,7 +63,7 @@ class RebuilderJob
     end
 
     with_git_repo.commit_changes_to_branch(branch, "Refresh countries.json") do
-      run('bundle exec rake countries.json')
+      run('bundle exec rake countries.json', 'EP_COUNTRY_REFRESH' => country_slug)
     end
 
     unless child_status && child_status.success?
