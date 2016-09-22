@@ -7,7 +7,6 @@ require 'English'
 
 configure :production do
   require 'rollbar/middleware/sinatra'
-  require 'rollbar/sidekiq'
 
   use Rollbar::Middleware::Sinatra
 

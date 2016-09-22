@@ -22,5 +22,5 @@ group :test do
 end
 
 # Report exceptions to rollbar.com
-gem 'rollbar', '~> 2.8.0'
+gem 'rollbar', '~> 2.13'
 gem 'oj', '~> 2.12.14'
