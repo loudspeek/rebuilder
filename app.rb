@@ -168,6 +168,10 @@ class CreatePullRequestJob
   end
 end
 
+get '/' do
+  erb :bot_image
+end
+
 post '/:country/:legislature' do |country_path, legislature_path|
   logger.warn "Legacy route used: /#{country_path}/#{legislature_path}. Please use / with params"
   countries = Everypolitician::CountriesJson.new
