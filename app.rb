@@ -16,7 +16,6 @@ configure :production do
     config.environment = settings.environment
     config.framework = "Sinatra: #{Sinatra::VERSION}"
     config.root = Dir.pwd
-    config.exception_level_filters.merge('Sinatra::NotFound' => 'ignore')
   end
 end
 
