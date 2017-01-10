@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'bundler'
 Bundler.require
 Dotenv.load
@@ -61,7 +62,7 @@ class RebuilderJob
       end
     end
 
-    with_git_repo.commit_changes_to_branch(branch, "Refresh countries.json") do
+    with_git_repo.commit_changes_to_branch(branch, 'Refresh countries.json') do
       run('bundle exec rake countries.json', 'EP_COUNTRY_REFRESH' => country_slug)
     end
 
@@ -94,8 +95,8 @@ class RebuilderJob
 
   def with_git_repo
     @with_git_repo ||= WithGitRepo.new(
-      clone_url: clone_url,
-      user_name: github.login,
+      clone_url:  clone_url,
+      user_name:  github.login,
       user_email: github.emails.first[:email]
     )
   end
@@ -114,11 +115,11 @@ class RebuilderJob
   # Unset bundler environment variables so it uses the correct Gemfile etc.
   def env
     @env ||= {
-      'BUNDLE_GEMFILE' => nil,
-      'BUNDLE_BIN_PATH' => nil,
-      'RUBYOPT' => nil,
-      'RUBYLIB' => nil,
-      'NOKOGIRI_USE_SYSTEM_LIBRARIES' => '1'
+      'BUNDLE_GEMFILE'                => nil,
+      'BUNDLE_BIN_PATH'               => nil,
+      'RUBYOPT'                       => nil,
+      'RUBYLIB'                       => nil,
+      'NOKOGIRI_USE_SYSTEM_LIBRARIES' => '1',
     }
   end
 
@@ -145,11 +146,11 @@ class CreatePullRequestJob
     changes = github.compare(EVERYPOLITICIAN_DATA_REPO, 'master', branch)
     changed_files = changes[:files].map { |f| File.basename(f[:filename]) }
     unless changed_files.include?('ep-popolo-v1.0.json')
-      warn "No change to ep-popolo-v1.0.json detected, skipping"
+      warn 'No change to ep-popolo-v1.0.json detected, skipping'
       return
     end
     body = Sidekiq.redis { |conn| conn.get(body_key) }
-    body ||= "Output of build no longer available"
+    body ||= 'Output of build no longer available'
     github.create_pull_request(
       EVERYPOLITICIAN_DATA_REPO,
       'master',
