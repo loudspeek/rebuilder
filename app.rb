@@ -187,8 +187,7 @@ post '/:country/:legislature' do |country_path, legislature_path|
   countries.each do |country|
     country[:legislatures].each do |legislature|
       if File.dirname(legislature[:popolo]) == "data/#{country_path}/#{legislature_path}"
-        RebuilderJob.perform_async(country[:slug], legislature[:slug])
-        return "Queued rebuild for #{country[:slug]} #{legislature[:slug]}\n"
+        return rebuild(country[:slug], legislature[:slug])
       end
     end
   end
