@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'rake/testtask'
 
 Rake::TestTask.new do |t|
@@ -6,4 +7,7 @@ Rake::TestTask.new do |t|
   t.verbose = true
 end
 
-task default: :test
+require 'rubocop/rake_task'
+RuboCop::RakeTask.new
+
+task default: %i(rubocop test)
