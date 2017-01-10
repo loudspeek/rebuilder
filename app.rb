@@ -198,6 +198,5 @@ post '/' do
   country = params[:country]
   legislature = params[:legislature]
   source = params[:source]
-  RebuilderJob.perform_async(country, legislature, source)
-  "Queued rebuild for country=#{country} legislature=#{legislature} source=#{source}\n"
+  rebuild(country, legislature, source)
 end
