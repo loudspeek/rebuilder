@@ -168,6 +168,15 @@ class CreatePullRequestJob
   end
 end
 
+helpers do
+  def rebuild(country, legislature, source = nil)
+    RebuilderJob.perform_async(country, legislature, source)
+    message = "Queued rebuild for country=#{country} legislature=#{legislature} source=#{source}\n"
+    logger.warn(message)
+    message
+  end
+end
+
 get '/' do
   erb :bot_image
 end
@@ -178,8 +187,7 @@ post '/:country/:legislature' do |country_path, legislature_path|
   countries.each do |country|
     country[:legislatures].each do |legislature|
       if File.dirname(legislature[:popolo]) == "data/#{country_path}/#{legislature_path}"
-        RebuilderJob.perform_async(country[:slug], legislature[:slug])
-        return "Queued rebuild for #{country[:slug]} #{legislature[:slug]}\n"
+        return rebuild(country[:slug], legislature[:slug])
       end
     end
   end
@@ -189,6 +197,5 @@ post '/' do
   country = params[:country]
   legislature = params[:legislature]
   source = params[:source]
-  RebuilderJob.perform_async(country, legislature, source)
-  "Queued rebuild for country=#{country} legislature=#{legislature} source=#{source}\n"
+  rebuild(country, legislature, source)
 end

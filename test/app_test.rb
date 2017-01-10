@@ -16,11 +16,11 @@ describe 'Rebuilder' do
     end
 
     it 'has the correct arguments' do
-      assert_equal %w(Thailand National-Legislative-Assembly), RebuilderJob.jobs.first['args']
+      assert_equal ['Thailand', 'National-Legislative-Assembly', nil], RebuilderJob.jobs.first['args']
     end
 
     it 'confirms rebuild in response body' do
-      assert_equal "Queued rebuild for Thailand National-Legislative-Assembly\n", last_response.body
+      assert_equal "Queued rebuild for country=Thailand legislature=National-Legislative-Assembly source=\n", last_response.body
     end
   end
 
