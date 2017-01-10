@@ -12,6 +12,7 @@ gem 'with_git_repo'
 gem 'colorize'
 gem 'rake'
 gem 'everypolitician'
+gem 'rubocop'
 
 group :test do
   gem 'minitest'
