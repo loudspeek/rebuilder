@@ -3,6 +3,7 @@ require 'bundler'
 Bundler.require
 Dotenv.load
 
+require 'sidekiq/api'
 require 'active_support/core_ext'
 require 'English'
 
@@ -170,6 +171,11 @@ end
 
 helpers do
   def rebuild(country, legislature, source = nil)
+    if Sidekiq::Queue.new.map(&:args).any? { |args| args == [country, legislature, source] }
+      error = "Existing job found for #{args.inspect}, skipping."
+      logger.warn(error)
+      return error
+    end
     RebuilderJob.perform_async(country, legislature, source)
     message = "Queued rebuild for country=#{country} legislature=#{legislature} source=#{source}\n"
     logger.warn(message)
