@@ -168,6 +168,15 @@ class CreatePullRequestJob
   end
 end
 
+helpers do
+  def rebuild(country, legislature, source = nil)
+    RebuilderJob.perform_async(country, legislature, source)
+    message = "Queued rebuild for country=#{country} legislature=#{legislature} source=#{source}\n"
+    logger.warn(message)
+    message
+  end
+end
+
 get '/' do
   erb :bot_image
 end
