@@ -12,11 +12,11 @@ describe 'Rebuilder' do
     end
 
     it 'queues one job' do
-      assert_equal 1, RebuilderJob.jobs.size
+      assert_equal 1, Sidekiq::Queue.new.size
     end
 
     it 'has the correct arguments' do
-      assert_equal ['Thailand', 'National-Legislative-Assembly', nil], RebuilderJob.jobs.first['args']
+      assert_equal ['Thailand', 'National-Legislative-Assembly', nil], Sidekiq::Queue.new.first['args']
     end
 
     it 'confirms rebuild in response body' do
@@ -32,11 +32,11 @@ describe 'Rebuilder' do
     end
 
     it 'queues one job' do
-      assert_equal 1, RebuilderJob.jobs.size
+      assert_equal 1, Sidekiq::Queue.new.size
     end
 
     it 'has the correct arguments' do
-      assert_equal ['Thailand', 'National-Legislative-Assembly', nil], RebuilderJob.jobs.first['args']
+      assert_equal ['Thailand', 'National-Legislative-Assembly', nil], Sidekiq::Queue.new.first['args']
     end
 
     it 'confirms rebuild in response body' do
@@ -52,11 +52,11 @@ describe 'Rebuilder' do
     end
 
     it 'queues one job' do
-      assert_equal 1, RebuilderJob.jobs.size
+      assert_equal 1, Sidekiq::Queue.new.size
     end
 
     it 'has the correct arguments' do
-      assert_equal %w(Thailand National-Legislative-Assembly gender-balance), RebuilderJob.jobs.first['args']
+      assert_equal %w(Thailand National-Legislative-Assembly gender-balance), Sidekiq::Queue.new.first['args']
     end
 
     it 'confirms rebuild in response body' do

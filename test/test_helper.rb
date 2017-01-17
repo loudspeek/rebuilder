@@ -1,14 +1,11 @@
 # frozen_string_literal: true
 ENV['RACK_ENV'] = 'test'
 require 'minitest/autorun'
-require 'sidekiq/testing'
 require 'rack/test'
-
-Sidekiq::Testing.fake!
 
 module SidekiqMinitestSupport
   def after_teardown
-    Sidekiq::Worker.clear_all
+    Sidekiq::Queue.new.clear
   end
 end
 
