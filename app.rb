@@ -169,15 +169,22 @@ class CreatePullRequestJob
   end
 end
 
+module Rebuilder
+  class Queue
+    def add(country, legislature, source = nil)
+      if Sidekiq::Queue.new.map(&:args).any? { |args| args == [country, legislature, source] }
+        "Existing job found for #{[country, legislature, source].inspect}, skipping."
+      else
+        RebuilderJob.perform_async(country, legislature, source)
+        "Queued rebuild for country=#{country} legislature=#{legislature} source=#{source}\n"
+      end
+    end
+  end
+end
+
 helpers do
   def rebuild(country, legislature, source = nil)
-    if Sidekiq::Queue.new.map(&:args).any? { |args| args == [country, legislature, source] }
-      error = "Existing job found for #{args.inspect}, skipping."
-      logger.warn(error)
-      return error
-    end
-    RebuilderJob.perform_async(country, legislature, source)
-    message = "Queued rebuild for country=#{country} legislature=#{legislature} source=#{source}\n"
+    message = Rebuilder::Queue.new.add(country, legislature, source)
     logger.warn(message)
     message
   end
