@@ -199,3 +199,7 @@ post '/' do
   source = params[:source]
   rebuild(country, legislature, source)
 end
+
+post '/rebuild/:country_slug/:legislature_slug/?:source_name?' do |country_slug, legislature_slug, source_name|
+  rebuild(country_slug, legislature_slug, source_name)
+end
