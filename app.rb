@@ -4,7 +4,7 @@ Bundler.require
 Dotenv.load
 
 require 'active_support/core_ext'
-require 'English'
+require_relative 'lib/external_command'
 
 configure :production do
   require 'rollbar/middleware/sinatra'
