@@ -36,3 +36,14 @@ Run the app server
 You can then trigger a rebuild using `curl(1)`:
 
     curl -i -X POST -d 'country=Australia' -d 'legislature=Senate' http://localhost:5000/
+
+## Architecture
+
+### Cleaning the output from external commands
+
+The output of external commands is included in the resulting pull request that the Rebuilder creates. Before including it in a pull request the output needs to be cleaned to remove any API keysand strip color escape codes. Use the `CleanedOutput` class to obtain a cleaned version of an external command's output.
+
+```ruby
+cleaned_output = CleanedOutput.new(output: 'key=secret pw=password', redactions: ['secret', 'password'])
+puts cleaned_output.to_s # => "key=REDACTED pw=REDACTED"
+```
