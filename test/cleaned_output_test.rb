@@ -24,6 +24,22 @@ describe 'CleanedOutput' do
     end
   end
 
+  describe 'passing nil as a redaction' do
+    subject { CleanedOutput.new(output: 'Hello, world', redactions: [nil]) }
+
+    it 'returns the expected output' do
+      subject.to_s.must_equal 'Hello, world'
+    end
+  end
+
+  describe 'passing an empty string as a redaction' do
+    subject { CleanedOutput.new(output: 'Hello, world', redactions: ['']) }
+
+    it 'returns the expected output' do
+      subject.to_s.must_equal 'Hello, world'
+    end
+  end
+
   describe 'with color escape codes in output' do
     let(:output) { '[0;31;49mTest[0m' }
     subject { CleanedOutput.new(output: output) }
