@@ -42,10 +42,10 @@ describe 'CleanedOutput' do
     end
 
     describe 'configured to a lower max size' do
-      subject { CleanedOutput.new(output: output, max_body_size: 100) }
+      subject { CleanedOutput.new(output: 'Hello, world', max_body_size: 5) }
 
-      it 'only returns the requested body size' do
-        subject.to_s.size.must_equal 100
+      it 'only returns the last n characters of the body' do
+        subject.to_s.must_equal 'world'
       end
     end
   end
