@@ -57,3 +57,12 @@ command = ExternalCommand.new(
 command.output # => "Hello, Bob.\n"
 command.success? # => true
 ```
+
+### Cleaning the output from external commands
+
+The output of external commands is included in the resulting pull request that the Rebuilder creates. Before including it in a pull request the output needs to be cleaned to remove any API keysand strip color escape codes. Use the `CleanedOutput` class to obtain a cleaned version of an external command's output.
+
+```ruby
+cleaned_output = CleanedOutput.new(output: 'API Key: Test', morph_api_key: 'Test')
+puts cleaned_output.to_s # => "API Key: REDACTED"
+```
