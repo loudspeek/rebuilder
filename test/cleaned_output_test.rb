@@ -24,6 +24,19 @@ describe 'CleanedOutput' do
     end
   end
 
+  describe 'redacting single string from output' do
+    subject do
+      CleanedOutput.new(
+        output:     'My password is secret',
+        redactions: 'secret'
+      )
+    end
+
+    it 'removes the key from the output' do
+      subject.to_s.must_equal 'My password is REDACTED'
+    end
+  end
+
   describe 'passing nil as a redaction' do
     subject { CleanedOutput.new(output: 'Hello, world', redactions: [nil]) }
 
