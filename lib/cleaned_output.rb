@@ -3,9 +3,10 @@ require 'colorize'
 require 'erb'
 
 class CleanedOutput
-  def initialize(output:, redactions: [])
+  def initialize(output:, redactions: [], max_body_size: 64_000)
     @output = output
     @redactions = redactions
+    @max_body_size = max_body_size
   end
 
   def to_s
@@ -14,14 +15,14 @@ class CleanedOutput
 
   private
 
-  attr_reader :output, :redactions
+  attr_reader :output, :redactions, :max_body_size
 
   def output_with_transforms_applied
     truncate(uncolorize(redact(output)))
   end
 
   def truncate(out)
-    out[-64_000..-1] || out
+    out[-max_body_size..-1] || out
   end
 
   def uncolorize(out)

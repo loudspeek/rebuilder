@@ -40,5 +40,13 @@ describe 'CleanedOutput' do
     it 'only returns that last 64k' do
       subject.to_s.size.must_equal 64_000
     end
+
+    describe 'configured to a lower max size' do
+      subject { CleanedOutput.new(output: output, max_body_size: 100) }
+
+      it 'only returns the requested body size' do
+        subject.to_s.size.must_equal 100
+      end
+    end
   end
 end
