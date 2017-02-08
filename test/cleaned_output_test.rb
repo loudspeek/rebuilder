@@ -23,6 +23,19 @@ describe 'CleanedOutput' do
     end
   end
 
+  describe 'no morph API key' do
+    subject do
+      CleanedOutput.new(
+        output:        'Test',
+        morph_api_key: nil
+      )
+    end
+
+    it 'removes the key from the output' do
+      subject.to_s.must_equal 'Test'
+    end
+  end
+
   describe 'with color escape codes in output' do
     let(:output) { '[0;31;49mTest[0m' }
     subject { CleanedOutput.new(output: output) }
