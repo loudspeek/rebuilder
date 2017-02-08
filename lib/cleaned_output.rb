@@ -5,7 +5,7 @@ require 'erb'
 class CleanedOutput
   def initialize(output:, redactions: [], max_body_size: 64_000)
     @output = output
-    @redactions = redactions
+    @redactions = [redactions].flatten
     @max_body_size = max_body_size
   end
 

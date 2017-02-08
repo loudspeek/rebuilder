@@ -40,6 +40,14 @@ describe 'CleanedOutput' do
     end
   end
 
+  describe 'passed nil instead of redactions array' do
+    subject { CleanedOutput.new(output: 'Hello, world', redactions: nil) }
+
+    it 'returns the expected output' do
+      subject.to_s.must_equal 'Hello, world'
+    end
+  end
+
   describe 'with color escape codes in output' do
     let(:output) { '[0;31;49mTest[0m' }
     subject { CleanedOutput.new(output: output) }
