@@ -5,6 +5,7 @@ Dotenv.load
 
 require 'active_support/core_ext'
 require_relative 'lib/external_command'
+require_relative 'lib/cleaned_output'
 
 configure :production do
   require 'rollbar/middleware/sinatra'
@@ -49,36 +50,28 @@ class RebuilderJob
     branch_parts = [country_slug, legislature_slug, Time.now.to_i]
     branch = branch_parts.join('-').parameterize
     message = "#{country.name}: Refresh from upstream changes"
-    output = ''
-    child_status = nil
+    command = nil
     with_git_repo.commit_changes_to_branch(branch, message) do
-      run('bundle install --quiet --jobs 4 --without test')
+      ExternalCommand.new(command: 'bundle install --quiet --jobs 4 --without test').run
       Dir.chdir(File.dirname(legislature.popolo)) do
-        if source
-          output, child_status = run('bundle exec rake clean default 2>&1', 'REBUILD_SOURCE' => source)
-        else
-          output, child_status = run('bundle exec rake clobber default 2>&1')
-        end
+        command = ExternalCommand.new(
+          command: "bundle exec rake #{source ? 'clean' : 'clobber'} default 2>&1",
+          env:     { 'REBUILD_SOURCE' => source }
+        ).run
       end
     end
 
     with_git_repo.commit_changes_to_branch(branch, 'Refresh countries.json') do
-      run('bundle exec rake countries.json', 'EP_COUNTRY_REFRESH' => country_slug)
+      ExternalCommand.new(command: 'bundle exec rake countries.json', env: { 'EP_COUNTRY_REFRESH' => country_slug }).run
     end
 
-    unless child_status && child_status.success?
-      Rollbar.error("Failed to build #{country.name} - #{legislature.name}\n\n" + output)
+    unless command.success?
+      Rollbar.error("Failed to build #{country.name} - #{legislature.name}\n\n" + command.output)
       return
     end
-    if ENV.key?('MORPH_API_KEY')
-      api_key = ERB::Util.url_encode(ENV['MORPH_API_KEY'])
-      output = output.gsub(api_key, 'REDACTED').uncolorize
-    end
-    # Only use last 64k of output
-    output = output[-64_000..-1] || output
     title = "#{country.name} (#{legislature.name}): refresh data"
     body = "Automated data refresh for #{country.name} - #{legislature.name}" \
-      "\n\n#### Output\n\n```\n#{output}\n```"
+      "\n\n#### Output\n\n```\n#{CleanedOutput.new(output: command.output)}\n```"
     Sidekiq.redis do |conn|
       key = "body:#{branch}"
       conn.set(key, body)
@@ -110,22 +103,6 @@ class RebuilderJob
 
   def repo
     @repo ||= github.repository(EVERYPOLITICIAN_DATA_REPO)
-  end
-
-  # Unset bundler environment variables so it uses the correct Gemfile etc.
-  def env
-    @env ||= {
-      'BUNDLE_GEMFILE'                => nil,
-      'BUNDLE_BIN_PATH'               => nil,
-      'RUBYOPT'                       => nil,
-      'RUBYLIB'                       => nil,
-      'NOKOGIRI_USE_SYSTEM_LIBRARIES' => '1',
-    }
-  end
-
-  def run(command, extra_env = {})
-    output = IO.popen(env.merge(extra_env), command, &:read)
-    [output, $CHILD_STATUS]
   end
 end
 
