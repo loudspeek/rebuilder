@@ -30,7 +30,7 @@ class CleanedOutput
   end
 
   def redact(out)
-    redactions.reject { |r| r.nil? || r.empty? }.reduce(out) do |s, redaction|
+    redactions.compact.reject(&:empty?).reduce(out) do |s, redaction|
       s.gsub(ERB::Util.url_encode(redaction), 'REDACTED')
     end
   end
