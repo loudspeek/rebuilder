@@ -11,14 +11,12 @@ describe 'CleanedOutput' do
   end
 
   describe 'output containing Morph API key' do
-    before do
-      @old_key = ENV['MORPH_API_KEY']
-      ENV['MORPH_API_KEY'] = 'test-morph-api-key'
+    subject do
+      CleanedOutput.new(
+        output:        'Key: test-morph-api-key',
+        morph_api_key: 'test-morph-api-key'
+      )
     end
-
-    after { ENV['MORPH_API_KEY'] = @old_key }
-
-    subject { CleanedOutput.new(output: 'Key: test-morph-api-key') }
 
     it 'removes the key from the output' do
       subject.to_s.must_equal 'Key: REDACTED'

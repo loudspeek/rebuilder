@@ -2,8 +2,9 @@
 require 'colorize'
 
 class CleanedOutput
-  def initialize(output:)
+  def initialize(output:, morph_api_key: ENV['MORPH_API_KEY'])
     @output = output
+    @morph_api_key = morph_api_key
   end
 
   def to_s
@@ -12,13 +13,13 @@ class CleanedOutput
 
   private
 
+  attr_reader :output, :morph_api_key
+
   def cleaned_output
-    output.gsub(morph_api_key, 'REDACTED').uncolorize
+    output.gsub(morph_api_key_encoded, 'REDACTED').uncolorize
   end
 
-  def morph_api_key
-    ERB::Util.url_encode(ENV['MORPH_API_KEY'])
+  def morph_api_key_encoded
+    ERB::Util.url_encode(morph_api_key)
   end
-
-  attr_reader :output
 end
