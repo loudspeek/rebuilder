@@ -66,19 +66,15 @@ class RebuilderJob
       run('bundle exec rake countries.json', 'EP_COUNTRY_REFRESH' => country_slug)
     end
 
+    cleaned_output = CleanedOutput.new(output: output, redactions: [ENV['MORPH_API_KEY']])
+
     unless child_status && child_status.success?
-      Rollbar.error("Failed to build #{country.name} - #{legislature.name}\n\n" + output)
+      Rollbar.error("Failed to build #{country.name} - #{legislature.name}\n\n#{cleaned_output}")
       return
     end
-    if ENV.key?('MORPH_API_KEY')
-      api_key = ERB::Util.url_encode(ENV['MORPH_API_KEY'])
-      output = output.gsub(api_key, 'REDACTED').uncolorize
-    end
-    # Only use last 64k of output
-    output = output[-64_000..-1] || output
     title = "#{country.name} (#{legislature.name}): refresh data"
     body = "Automated data refresh for #{country.name} - #{legislature.name}" \
-      "\n\n#### Output\n\n```\n#{output}\n```"
+      "\n\n#### Output\n\n```\n#{cleaned_output}\n```"
     Sidekiq.redis do |conn|
       key = "body:#{branch}"
       conn.set(key, body)
