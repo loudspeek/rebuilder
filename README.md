@@ -41,7 +41,13 @@ You can then trigger a rebuild using `curl(1)`:
 
 ### Cleaning the output from external commands
 
-The output of external commands is included in the resulting pull request that the Rebuilder creates. Before including it in a pull request the output needs to be cleaned to remove any API keysand strip color escape codes. Use the `CleanedOutput` class to obtain a cleaned version of an external command's output.
+The output of external commands is included in the resulting pull request that the Rebuilder creates. Before including it in a pull request the output needs to be cleaned up. We currently apply the following transforms:
+
+- Apply a set of redactions to protect API keys etc
+- Strip color escape codes from the output
+- Return only the last n characters of the body (default 64,000, for using in GitHub comments)
+
+Use the `CleanedOutput` class to obtain a cleaned version of an external command's output.
 
 ```ruby
 cleaned_output = CleanedOutput.new(output: 'key=secret pw=password', redactions: ['secret', 'password'])
