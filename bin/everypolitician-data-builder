@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+git() {
+  command git -c user.name=everypoliticianbot -c user.email=team@everypolitician.org "$@"
+}
+
+# Unset bundler environment variables so it uses the correct Gemfile etc.
+unset BUNDLE_GEMFILE
+unset BUNDLE_BIN_PATH
+unset RUBYOPT
+unset RUBYLIB
+unset NOKOGIRI_USE_SYSTEM_LIBRARIES
+
+setup-everypolitician-data() {
+  git clone --quiet "$GIT_CLONE_URL" everypolitician-data
+  cd everypolitician-data
+  git checkout -b "$BRANCH_NAME"
+  bundle install --quiet --jobs 4 --without test
+}
+
+build-everypolitician-data() {
+  # Do the build in a subshell so we stay in the correct directory.
+  (
+    cd "$LEGISLATURE_DIRECTORY"
+    if [[ -n "$SOURCE_NAME" ]]; then
+      REBUILD_SOURCE="$SOURCE_NAME" bundle exec rake clean default
+    else
+      bundle exec rake clobber default
+    fi
+    git add .
+    git commit -m "$COUNTRY_NAME: Refresh from upstream changes" || true
+  )
+  build-countries-json
+}
+
+build-countries-json() {
+  EP_COUNTRY_REFRESH="$COUNTRY_SLUG" bundle exec rake countries.json
+  git add countries.json
+  git commit -m "Refresh countries.json" || true
+}
+
+save-everypolitician-data() {
+  git push --quiet origin HEAD
+}
+
+main() {
+  setup-everypolitician-data
+  build-everypolitician-data
+  save-everypolitician-data
+}
+
+main
