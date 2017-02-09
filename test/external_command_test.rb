@@ -38,4 +38,13 @@ describe 'ExternalCommand' do
       subject.success?.must_equal false
     end
   end
+
+  describe 'running commands in a tmpdir' do
+    let(:other_command) { ExternalCommand.new(command: 'pwd').run }
+    subject { ExternalCommand.new(command: 'pwd').run }
+
+    it 'runs in a different directory each time' do
+      subject.output.wont_equal other_command.output
+    end
+  end
 end

@@ -9,9 +9,9 @@ class ExternalCommand
   end
 
   def run
-    Dir.mktmpdir do
+    with_tmp_dir do
       Result.new(
-        output:       IO.popen(default_env.merge(env), command, &:read),
+        output:       IO.popen(env, command, &:read),
         child_status: $CHILD_STATUS
       )
     end
@@ -21,14 +21,9 @@ class ExternalCommand
 
   attr_reader :env, :command
 
-  # Unset bundler environment variables so it uses the correct Gemfile etc.
-  def default_env
-    @default_env ||= {
-      'BUNDLE_GEMFILE'                => nil,
-      'BUNDLE_BIN_PATH'               => nil,
-      'RUBYOPT'                       => nil,
-      'RUBYLIB'                       => nil,
-      'NOKOGIRI_USE_SYSTEM_LIBRARIES' => '1',
-    }
+  def with_tmp_dir(&block)
+    Dir.mktmpdir do |tmp_dir|
+      Dir.chdir(tmp_dir, &block)
+    end
   end
 end
