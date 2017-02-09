@@ -9,10 +9,12 @@ class ExternalCommand
   end
 
   def run
-    Result.new(
-      output:       IO.popen(default_env.merge(env), command, &:read),
-      child_status: $CHILD_STATUS
-    )
+    Dir.mktmpdir do
+      Result.new(
+        output:       IO.popen(default_env.merge(env), command, &:read),
+        child_status: $CHILD_STATUS
+      )
+    end
   end
 
   private
