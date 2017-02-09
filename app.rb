@@ -6,6 +6,7 @@ Dotenv.load
 require 'active_support/core_ext'
 
 require_relative './lib/cleaned_output'
+require_relative './lib/external_command'
 
 configure :production do
   require 'rollbar/middleware/sinatra'
@@ -53,18 +54,17 @@ class RebuilderJob
     output = ''
     child_status = nil
     with_git_repo.commit_changes_to_branch(branch, message) do
-      run('bundle install --quiet --jobs 4 --without test')
+      ExternalCommand.new(command: 'bundle install --quiet --jobs 4 --without test').run
       Dir.chdir(File.dirname(legislature.popolo)) do
-        if source
-          output, child_status = run('bundle exec rake clean default 2>&1', 'REBUILD_SOURCE' => source)
-        else
-          output, child_status = run('bundle exec rake clobber default 2>&1')
-        end
+        output, child_status = ExternalCommand.new(
+          command: "bundle exec rake #{source ? 'clean' : 'clobber'} default 2>&1",
+          env: { 'REBUILD_SOURCE' => source }
+        ).run
       end
     end
 
     with_git_repo.commit_changes_to_branch(branch, 'Refresh countries.json') do
-      run('bundle exec rake countries.json', 'EP_COUNTRY_REFRESH' => country_slug)
+      ExternalCommand.new(command: 'bundle exec rake countries.json', env: { 'EP_COUNTRY_REFRESH' => country_slug })
     end
 
     cleaned_output = CleanedOutput.new(output: output, redactions: [ENV['MORPH_API_KEY']])
@@ -107,22 +107,6 @@ class RebuilderJob
 
   def repo
     @repo ||= github.repository(EVERYPOLITICIAN_DATA_REPO)
-  end
-
-  # Unset bundler environment variables so it uses the correct Gemfile etc.
-  def env
-    @env ||= {
-      'BUNDLE_GEMFILE'                => nil,
-      'BUNDLE_BIN_PATH'               => nil,
-      'RUBYOPT'                       => nil,
-      'RUBYLIB'                       => nil,
-      'NOKOGIRI_USE_SYSTEM_LIBRARIES' => '1',
-    }
-  end
-
-  def run(command, extra_env = {})
-    output = IO.popen(env.merge(extra_env), command, &:read)
-    [output, $CHILD_STATUS]
   end
 end
 
