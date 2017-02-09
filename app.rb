@@ -6,6 +6,8 @@ Dotenv.load
 require 'active_support/core_ext'
 require 'English'
 
+require_relative './lib/cleaned_output'
+
 configure :production do
   require 'rollbar/middleware/sinatra'
 
