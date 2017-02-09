@@ -48,28 +48,21 @@ class RebuilderJob
       country_slug,
       legislature_slug
     )
-    branch_parts = [country_slug, legislature_slug, Time.now.to_i]
-    branch = branch_parts.join('-').parameterize
-    message = "#{country.name}: Refresh from upstream changes"
-    output = ''
-    child_status = nil
-    with_git_repo.commit_changes_to_branch(branch, message) do
-      ExternalCommand.new(command: 'bundle install --quiet --jobs 4 --without test').run
-      Dir.chdir(File.dirname(legislature.popolo)) do
-        output, child_status = ExternalCommand.new(
-          command: "bundle exec rake #{source ? 'clean' : 'clobber'} default 2>&1",
-          env: { 'REBUILD_SOURCE' => source }
-        ).run
-      end
-    end
+    build_command = ExternalCommand.new(
+      command: "#{File.join(__dir__, 'bin/everypolitician-data-builder')} 2>&1",
+      env:     {
+        'BRANCH_NAME'           => [country_slug, legislature_slug, Time.now.to_i].join('-').parameterize,
+        'GIT_CLONE_URL'         => clone_url.to_s,
+        'LEGISLATURE_DIRECTORY' => File.dirname(legislature.popolo),
+        'SOURCE_NAME'           => source,
+        'COUNTRY_NAME'          => country.name,
+        'COUNTRY_SLUG'          => country.slug,
+      }
+    ).run
 
-    with_git_repo.commit_changes_to_branch(branch, 'Refresh countries.json') do
-      ExternalCommand.new(command: 'bundle exec rake countries.json', env: { 'EP_COUNTRY_REFRESH' => country_slug })
-    end
+    cleaned_output = CleanedOutput.new(output: build_command.output, redactions: [ENV['MORPH_API_KEY'], github.access_token])
 
-    cleaned_output = CleanedOutput.new(output: output, redactions: [ENV['MORPH_API_KEY']])
-
-    unless child_status && child_status.success?
+    unless build_command.success?
       Rollbar.error("Failed to build #{country.name} - #{legislature.name}\n\n#{cleaned_output}")
       return
     end
@@ -89,14 +82,6 @@ class RebuilderJob
   end
 
   private
-
-  def with_git_repo
-    @with_git_repo ||= WithGitRepo.new(
-      clone_url:  clone_url,
-      user_name:  github.login,
-      user_email: github.emails.first[:email]
-    )
-  end
 
   def clone_url
     @clone_url ||= URI.parse(repo.clone_url).tap do |repo_clone_url|
