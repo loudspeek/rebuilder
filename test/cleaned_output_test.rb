@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 require 'test_helper'
-require_relative '../lib/cleaned_output'
 
 describe 'CleanedOutput' do
   describe 'basic output' do
