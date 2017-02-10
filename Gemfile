@@ -13,6 +13,7 @@ gem 'rake'
 gem 'rubocop'
 gem 'sidekiq'
 gem 'sinatra'
+gem 'pry'
 
 group :test do
   gem 'minitest'
