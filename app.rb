@@ -39,49 +39,94 @@ EVERYPOLITICIAN_DATA_REPO = ENV.fetch(
   'everypolitician/everypolitician-data'
 )
 
-# Rebuild a given country's legislature information
-class RebuilderJob
-  include Sidekiq::Worker
+class Rebuild
+  def initialize(clone_url:, country_slug:, legislature_slug:, source: nil)
+    @clone_url = clone_url
+    @country_slug = country_slug
+    @legislature_slug = legislature_slug
+    @source = source
+  end
 
-  def perform(country_slug, legislature_slug, source = nil)
-    country, legislature = Everypolitician.country_legislature(
-      country_slug,
-      legislature_slug
-    )
+  def branch
+    @branch ||= [country_slug, legislature_slug, Time.now.to_i].join('-').parameterize
+  end
 
-    branch = [country_slug, legislature_slug, Time.now.to_i].join('-').parameterize
+  def title
+    @title ||= "#{country.name} (#{legislature.name}): refresh data"
+  end
 
-    build_command = ExternalCommand.new(
+  def body
+    @body = "Automated data refresh for #{country.name} - #{legislature.name}" \
+      "\n\n#### Output\n\n```\n#{cleaned_output}\n```"
+  end
+
+  def error?
+    !build_command.success?
+  end
+
+  def error_message
+    "Failed to build #{country.name} - #{legislature.name}\n\n#{cleaned_output}"
+  end
+
+  private
+
+  attr_reader :clone_url, :country_slug, :legislature_slug, :source
+
+  def index
+    @index ||= Everypolitician::Index.new
+  end
+
+  def country
+    @country ||= index.country(country_slug)
+  end
+
+  def legislature
+    @legislature ||= country.legislature(legislature_slug)
+  end
+
+  def cleaned_output
+    @cleaned_output ||= CleanedOutput.new(output: build_command.output, redactions: [ENV['MORPH_API_KEY']])
+  end
+
+  def build_command
+    @build_command ||= ExternalCommand.new(
       command: "#{File.join(__dir__, 'bin/everypolitician-data-builder')} 2>&1",
       env:     {
         'BRANCH_NAME'           => branch,
         'GIT_CLONE_URL'         => clone_url.to_s,
-        'LEGISLATURE_DIRECTORY' => File.dirname(legislature.popolo),
+        'LEGISLATURE_DIRECTORY' => "data/#{legislature.directory}",
         'SOURCE_NAME'           => source,
         'COUNTRY_NAME'          => country.name,
         'COUNTRY_SLUG'          => country.slug,
       }
     ).run
+  end
+end
 
-    cleaned_output = CleanedOutput.new(output: build_command.output, redactions: [ENV['MORPH_API_KEY']])
+# Rebuild a given country's legislature information
+class RebuilderJob
+  include Sidekiq::Worker
 
-    unless build_command.success?
-      Rollbar.error("Failed to build #{country.name} - #{legislature.name}\n\n#{cleaned_output}")
+  def perform(country_slug, legislature_slug, source = nil)
+    rebuild = Rebuild.new(clone_url: clone_url, country_slug: country_slug, legislature_slug: legislature_slug, source: source)
+
+    if rebuild.error?
+      warn rebuild.error_message
+      Rollbar.error(rebuild.error_message)
       return
     end
-    title = "#{country.name} (#{legislature.name}): refresh data"
-    body = "Automated data refresh for #{country.name} - #{legislature.name}" \
-      "\n\n#### Output\n\n```\n#{cleaned_output}\n```"
-    Sidekiq.redis do |conn|
-      key = "body:#{branch}"
-      conn.set(key, body)
-      conn.expire(key, 6.hours)
 
-      # Wait so the branch is available through GitHub's API.
-      # If the job executes immediately then the branch may not
-      # be visible yet.
-      CreatePullRequestJob.perform_in(1.minute, branch, title, key)
+    key = "body:#{rebuild.branch}"
+
+    Sidekiq.redis do |conn|
+      conn.set(key, rebuild.body)
+      conn.expire(key, 6.hours)
     end
+
+    # Wait so the branch is available through GitHub's API.
+    # If the job executes immediately then the branch may not
+    # be visible yet.
+    CreatePullRequestJob.perform_in(1.minute, rebuild.branch, rebuild.title, key)
   end
 
   private
