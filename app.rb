@@ -48,25 +48,18 @@ class RebuilderJob
       country_slug,
       legislature_slug
     )
-    branch_parts = [country_slug, legislature_slug, Time.now.to_i]
-    branch = branch_parts.join('-').parameterize
-    message = "#{country.name}: Refresh from upstream changes"
-    output = ''
-    child_status = nil
-    with_git_repo.commit_changes_to_branch(branch, message) do
-      run('bundle install --quiet --jobs 4 --without test')
-      Dir.chdir(File.dirname(legislature.popolo)) do
-        if source
-          output, child_status = run('bundle exec rake clean default 2>&1', 'REBUILD_SOURCE' => source)
-        else
-          output, child_status = run('bundle exec rake clobber default 2>&1')
-        end
-      end
-    end
 
-    with_git_repo.commit_changes_to_branch(branch, 'Refresh countries.json') do
-      run('bundle exec rake countries.json', 'EP_COUNTRY_REFRESH' => country_slug)
-    end
+    branch = [country_slug, legislature_slug, Time.now.to_i].join('-').parameterize
+
+    output, child_status = run(
+      "#{File.join(__dir__, 'bin/everypolitician-data-builder')} 2>&1",
+      'BRANCH_NAME'           => branch,
+      'GIT_CLONE_URL'         => clone_url.to_s,
+      'LEGISLATURE_DIRECTORY' => File.dirname(legislature.popolo),
+      'SOURCE_NAME'           => source,
+      'COUNTRY_NAME'          => country.name,
+      'COUNTRY_SLUG'          => country.slug
+    )
 
     cleaned_output = CleanedOutput.new(output: output, redactions: [ENV['MORPH_API_KEY']])
 
@@ -122,8 +115,16 @@ class RebuilderJob
   end
 
   def run(command, extra_env = {})
-    output = IO.popen(env.merge(extra_env), command, &:read)
-    [output, $CHILD_STATUS]
+    with_tmp_dir do
+      output = IO.popen(env.merge(extra_env), command, &:read)
+      [output, $CHILD_STATUS]
+    end
+  end
+
+  def with_tmp_dir(&block)
+    Dir.mktmpdir do |tmp_dir|
+      Dir.chdir(tmp_dir, &block)
+    end
   end
 end
 
