@@ -67,8 +67,9 @@ class RebuilderJob
       Rollbar.error("Failed to build #{country.name} - #{legislature.name}\n\n#{cleaned_output}")
       return
     end
-    title = "#{country.name} (#{legislature.name}): refresh data"
-    body = "Automated data refresh for #{country.name} - #{legislature.name}" \
+    source_name_with_default = source || 'all sources'
+    title = "#{country.name} (#{legislature.name}): refresh #{source_name_with_default}"
+    body = "Automated refresh of #{source_name_with_default} for #{country.name} - #{legislature.name}" \
       "\n\n#### Output\n\n```\n#{cleaned_output}\n```"
     Sidekiq.redis do |conn|
       key = "body:#{branch}"
