@@ -3,6 +3,7 @@ ENV['RACK_ENV'] = 'test'
 require 'minitest/autorun'
 require 'sidekiq/testing'
 require 'rack/test'
+require 'pry'
 
 Sidekiq::Testing.fake!
 
