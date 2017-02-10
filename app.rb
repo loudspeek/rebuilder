@@ -6,6 +6,7 @@ Dotenv.load
 require 'active_support/core_ext'
 
 require_relative './lib/cleaned_output'
+require_relative './lib/external_command'
 
 configure :production do
   require 'rollbar/middleware/sinatra'
@@ -50,19 +51,21 @@ class RebuilderJob
 
     branch = [country_slug, legislature_slug, Time.now.to_i].join('-').parameterize
 
-    output, child_status = run(
-      "#{File.join(__dir__, 'bin/everypolitician-data-builder')} 2>&1",
-      'BRANCH_NAME'           => branch,
-      'GIT_CLONE_URL'         => clone_url.to_s,
-      'LEGISLATURE_DIRECTORY' => File.dirname(legislature.popolo),
-      'SOURCE_NAME'           => source,
-      'COUNTRY_NAME'          => country.name,
-      'COUNTRY_SLUG'          => country.slug
-    )
+    build_command = ExternalCommand.new(
+      command: "#{File.join(__dir__, 'bin/everypolitician-data-builder')} 2>&1",
+      env:     {
+        'BRANCH_NAME'           => branch,
+        'GIT_CLONE_URL'         => clone_url.to_s,
+        'LEGISLATURE_DIRECTORY' => File.dirname(legislature.popolo),
+        'SOURCE_NAME'           => source,
+        'COUNTRY_NAME'          => country.name,
+        'COUNTRY_SLUG'          => country.slug,
+      }
+    ).run
 
-    cleaned_output = CleanedOutput.new(output: output, redactions: [ENV['MORPH_API_KEY']])
+    cleaned_output = CleanedOutput.new(output: build_command.output, redactions: [ENV['MORPH_API_KEY']])
 
-    unless child_status && child_status.success?
+    unless build_command.success?
       Rollbar.error("Failed to build #{country.name} - #{legislature.name}\n\n#{cleaned_output}")
       return
     end
@@ -92,30 +95,6 @@ class RebuilderJob
 
   def repo
     @repo ||= github.repository(EVERYPOLITICIAN_DATA_REPO)
-  end
-
-  # Unset bundler environment variables so it uses the correct Gemfile etc.
-  def env
-    @env ||= {
-      'BUNDLE_GEMFILE'                => nil,
-      'BUNDLE_BIN_PATH'               => nil,
-      'RUBYOPT'                       => nil,
-      'RUBYLIB'                       => nil,
-      'NOKOGIRI_USE_SYSTEM_LIBRARIES' => '1',
-    }
-  end
-
-  def run(command, extra_env = {})
-    with_tmp_dir do
-      output = IO.popen(env.merge(extra_env), command, &:read)
-      [output, $CHILD_STATUS]
-    end
-  end
-
-  def with_tmp_dir(&block)
-    Dir.mktmpdir do |tmp_dir|
-      Dir.chdir(tmp_dir, &block)
-    end
   end
 end
 
