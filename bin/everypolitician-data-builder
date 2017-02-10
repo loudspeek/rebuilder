@@ -14,7 +14,7 @@ unset RUBYLIB
 unset NOKOGIRI_USE_SYSTEM_LIBRARIES
 
 setup-everypolitician-data() {
-  git clone --quiet "$GIT_CLONE_URL" everypolitician-data
+  git clone --quiet --depth=1 "$GIT_CLONE_URL" everypolitician-data
   cd everypolitician-data
   git checkout -b "$BRANCH_NAME"
   bundle install --quiet --jobs 4 --without test
@@ -32,7 +32,9 @@ build-everypolitician-data() {
     git add .
     git commit -m "$COUNTRY_NAME: Refresh from upstream changes" || true
   )
-  build-countries-json
+
+  # FIXME: Temporarily disabled because it doesn't work with a shallow clone of everypolitician-data.
+  # build-countries-json
 }
 
 build-countries-json() {
