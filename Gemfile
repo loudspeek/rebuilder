@@ -13,7 +13,6 @@ gem 'rake'
 gem 'rubocop'
 gem 'sidekiq'
 gem 'sinatra'
-gem 'with_git_repo'
 
 group :test do
   gem 'minitest'

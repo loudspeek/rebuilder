@@ -84,14 +84,6 @@ class RebuilderJob
 
   private
 
-  def with_git_repo
-    @with_git_repo ||= WithGitRepo.new(
-      clone_url:  clone_url,
-      user_name:  github.login,
-      user_email: github.emails.first[:email]
-    )
-  end
-
   def clone_url
     @clone_url ||= URI.parse(repo.clone_url).tap do |repo_clone_url|
       repo_clone_url.user = github.login
