@@ -129,6 +129,9 @@ class CreatePullRequestJob
   # Only retry 3 times, then discard the job
   sidekiq_options retry: 3, dead: false, queue: 'pull_requests'
 
+  # If any of these change, then we have a usable build
+  EXPECTED_FILES = ['ep-popolo-v1.0.json', 'unstable/positions.csv'].freeze
+
   def perform(branch, title, body_key)
     # The branch won't exist if there were no changes when the rebuild was run.
     unless branch_exists?(branch)
@@ -137,8 +140,8 @@ class CreatePullRequestJob
     end
     changes = github.compare(EVERYPOLITICIAN_DATA_REPO, 'master', branch)
     changed_files = changes[:files].map { |f| File.basename(f[:filename]) }
-    unless changed_files.include?('ep-popolo-v1.0.json')
-      warn 'No change to ep-popolo-v1.0.json detected, skipping'
+    unless (changed_files & EXPECTED_FILES).any?
+      warn 'No usable change detected, skipping'
       return
     end
     body = Sidekiq.redis { |conn| conn.get(body_key) }
