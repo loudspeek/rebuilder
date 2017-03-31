@@ -139,7 +139,7 @@ class CreatePullRequestJob
       return
     end
     changes = github.compare(EVERYPOLITICIAN_DATA_REPO, 'master', branch)
-    changed_files = changes[:files].map { |f| File.basename(f[:filename]) }
+    changed_files = changes[:files].map { |f| f[:filename].split('/').drop(3).join('/') }
     unless (changed_files & EXPECTED_FILES).any?
       warn 'No usable change detected, skipping'
       return
