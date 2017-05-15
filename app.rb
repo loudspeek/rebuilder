@@ -47,6 +47,14 @@ class RebuilderJob
     country = EveryPolitician.country(country_slug)
     legislature = country.legislature(legislature_slug)
 
+    if source
+      src = EveryPolitician::Instructions.new(legislature).source(source)
+      if src.current_data == source.fresh_data
+        warn "No morph changes for #{country_slug} #{legislature_slug} #{source}"
+        return
+      end
+    end
+
     branch = [country_slug, legislature_slug, Time.now.to_i].join('-').parameterize
 
     output, child_status = run(
@@ -159,6 +167,85 @@ class CreatePullRequestJob
   rescue Octokit::NotFound
     false
   end
+end
+
+module EveryPolitician
+  class Instructions
+    require 'json5'
+
+    def initialize(legislature)
+      @legislature = legislature
+    end
+
+    def source(name)
+      Source.new(legislature: legislature, stanza: instructions[:sources].find { |src| src[:file].include? name })
+    end
+
+    private
+
+    attr_reader :legislature
+
+    def instructions_url
+      legislature.popolo_url.sub('ep-popolo-v1.0.json', 'sources/instructions.json')
+    end
+
+    def raw_instructions
+      @raw ||= open(instructions_url).read
+    end
+
+    def instructions
+      JSON.parse(JSON5.parse(raw_instructions).to_json, symbolize_names: true)
+    end
+  end
+
+  class Source
+    GITHUB = 'https://raw.githubusercontent.com/everypolitician/everypolitician-data/master/data/%s/sources/%s'
+
+    def initialize(stanza:, legislature:)
+      @stanza = stanza
+      @legislature = legislature
+    end
+
+    # TODO: handle all the other types of source
+    def fresh_data
+      return '' unless creation[:from] == 'morph'
+      @fresh ||= MorphData.new(creation[:scraper]).query(creation[:query])
+    end
+
+    def current_data
+      @current ||= open(GITHUB % [legislature.directory, stanza[:file]]).read
+    end
+
+    private
+
+    attr_reader :stanza, :legislature
+
+    def creation
+      stanza[:create]
+    end
+  end
+end
+
+class MorphData
+  require 'rest-client'
+
+  def initialize(scraper)
+    @scraper = scraper
+  end
+
+  def query(query)
+    morph_api_url = 'https://api.morph.io/%s/data.csv' % scraper
+    morph_api_key = ENV['MORPH_API_KEY']
+    result = RestClient.get morph_api_url, params: {
+      key:   morph_api_key,
+      query: query,
+    }
+    result.to_s
+  end
+
+  private
+
+  attr_reader :scraper
 end
 
 helpers do
