@@ -178,14 +178,10 @@ end
 
 post '/:country/:legislature' do |country_path, legislature_path|
   logger.warn "Legacy route used: /#{country_path}/#{legislature_path}. Please use / with params"
-  countries = Everypolitician::CountriesJson.new
-  countries.each do |country|
-    country[:legislatures].each do |legislature|
-      if File.dirname(legislature[:popolo]) == "data/#{country_path}/#{legislature_path}"
-        return rebuild(country[:slug], legislature[:slug])
-      end
-    end
+  legislature = EveryPolitician.countries.flat_map(&:legislatures).find do |l|
+    l.directory == "#{country_path}/#{legislature_path}"
   end
+  rebuild(legislature.country.slug, legislature.slug)
 end
 
 post '/' do

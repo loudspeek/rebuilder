@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 source 'https://rubygems.org'
 
-ruby '2.3.1'
+ruby '2.3.3'
 
 gem 'activesupport', require: 'active_support'
 gem 'colorize'
@@ -17,6 +17,7 @@ gem 'sinatra'
 group :test do
   gem 'minitest'
   gem 'minitest-around'
+  gem 'pry'
   gem 'rack-test'
   gem 'vcr'
   gem 'webmock'
