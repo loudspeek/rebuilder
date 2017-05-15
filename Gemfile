@@ -17,6 +17,7 @@ gem 'sinatra'
 group :test do
   gem 'minitest'
   gem 'minitest-around'
+  gem 'pry'
   gem 'rack-test'
   gem 'vcr'
   gem 'webmock'
