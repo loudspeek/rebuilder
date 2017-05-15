@@ -49,8 +49,8 @@ class RebuilderJob
 
     if source
       src = EveryPolitician::Instructions.new(legislature).source(source)
-      if src.current_data == source.fresh_data
-        warn "No morph changes for #{country_slug} #{legislature_slug} #{source}"
+      if src.current_data == src.fresh_data
+        logger.warn "No morph changes for #{country_slug}/#{legislature_slug}/#{source}"
         return
       end
     end
