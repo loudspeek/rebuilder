@@ -161,6 +161,85 @@ class CreatePullRequestJob
   end
 end
 
+module EveryPolitician
+  class Instructions
+    require 'json5'
+
+    def initialize(legislature)
+      @legislature = legislature
+    end
+
+    def source(name)
+      Source.new(legislature: legislature, stanza: instructions[:sources].find { |src| src[:file].include? name })
+    end
+
+    private
+
+    attr_reader :legislature
+
+    def instructions_url
+      legislature.popolo_url.sub('ep-popolo-v1.0.json', 'sources/instructions.json')
+    end
+
+    def raw_instructions
+      @raw ||= open(instructions_url).read
+    end
+
+    def instructions
+      JSON.parse(JSON5.parse(raw_instructions).to_json, symbolize_names: true)
+    end
+  end
+
+  class Source
+    GITHUB = 'https://raw.githubusercontent.com/everypolitician/everypolitician-data/master/data/%s/sources/%s'
+
+    def initialize(stanza:, legislature:)
+      @stanza = stanza
+      @legislature = legislature
+    end
+
+    # TODO: handle all the other types of source
+    def fresh_data
+      return '' unless creation[:from] == 'morph'
+      @fresh ||= MorphData.new(creation[:scraper]).query(creation[:query])
+    end
+
+    def current_data
+      @current ||= open(GITHUB % [legislature.directory, stanza[:file]]).read
+    end
+
+    private
+
+    attr_reader :stanza, :legislature
+
+    def creation
+      stanza[:create]
+    end
+  end
+end
+
+class MorphData
+  require 'rest-client'
+
+  def initialize(scraper)
+    @scraper = scraper
+  end
+
+  def query(query)
+    morph_api_url = 'https://api.morph.io/%s/data.csv' % scraper
+    morph_api_key = ENV['MORPH_API_KEY']
+    result = RestClient.get morph_api_url, params: {
+      key:   morph_api_key,
+      query: query,
+    }
+    result.to_s
+  end
+
+  private
+
+  attr_reader :scraper
+end
+
 helpers do
   def rebuild(country, legislature, source = nil)
     RebuilderJob.perform_async(country, legislature, source)
