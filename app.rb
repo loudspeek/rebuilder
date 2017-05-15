@@ -47,6 +47,14 @@ class RebuilderJob
     country = EveryPolitician.country(country_slug)
     legislature = country.legislature(legislature_slug)
 
+    if source
+      src = EveryPolitician::Instructions.new(legislature).source(source)
+      if src.current_data == source.fresh_data
+        warn "No morph changes for #{country_slug} #{legislature_slug} #{source}"
+        return
+      end
+    end
+
     branch = [country_slug, legislature_slug, Time.now.to_i].join('-').parameterize
 
     output, child_status = run(
