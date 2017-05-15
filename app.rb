@@ -44,10 +44,8 @@ class RebuilderJob
   include Sidekiq::Worker
 
   def perform(country_slug, legislature_slug, source = nil)
-    country, legislature = Everypolitician.country_legislature(
-      country_slug,
-      legislature_slug
-    )
+    country = EveryPolitician.country(country_slug)
+    legislature = country.legislature(legislature_slug)
 
     branch = [country_slug, legislature_slug, Time.now.to_i].join('-').parameterize
 
@@ -55,7 +53,7 @@ class RebuilderJob
       "#{File.join(__dir__, 'bin/everypolitician-data-builder')} 2>&1",
       'BRANCH_NAME'           => branch,
       'GIT_CLONE_URL'         => clone_url.to_s,
-      'LEGISLATURE_DIRECTORY' => File.dirname(legislature.popolo),
+      'LEGISLATURE_DIRECTORY' => 'data/' + legislature.directory,
       'SOURCE_NAME'           => source,
       'COUNTRY_NAME'          => country.name,
       'COUNTRY_SLUG'          => country.slug
