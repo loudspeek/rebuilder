@@ -178,7 +178,9 @@ module EveryPolitician
     end
 
     def source(name)
-      Source.new(legislature: legislature, stanza: instructions[:sources].find { |src| src[:file].include? name })
+      Source.new(legislature: legislature, stanza: instructions[:sources].find do |src|
+        src[:create] && (src[:create][:from] == 'morph') && (src[:file].include? name)
+      end)
     end
 
     private
@@ -208,7 +210,7 @@ module EveryPolitician
 
     # TODO: handle all the other types of source
     def fresh_data
-      return '' unless creation[:from] == 'morph'
+      return '' unless creation[:from].to_s == 'morph'
       @fresh ||= MorphData.new(creation[:scraper]).query(creation[:query])
     end
 
@@ -221,7 +223,7 @@ module EveryPolitician
     attr_reader :stanza, :legislature
 
     def creation
-      stanza[:create]
+      stanza[:create] || {}
     end
   end
 end
