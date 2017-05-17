@@ -49,6 +49,11 @@ class RebuilderJob
 
     if source
       src = EveryPolitician::Instructions.new(legislature).source(source)
+      if src.current_data.to_s.empty?
+        logger.warn "No github data for #{country_slug}/#{legislature_slug}/#{source}"
+        return
+      end
+
       if src.current_data == src.fresh_data
         logger.warn "No morph changes for #{country_slug}/#{legislature_slug}/#{source}"
         return
@@ -215,12 +220,19 @@ module EveryPolitician
     end
 
     def current_data
-      @current ||= open(GITHUB % [legislature.directory, stanza[:file]]).read
+      @current ||= open(github_data_url).read
+    rescue
+      warn "Can't fetch current data from #{github_data_url}"
+      nil
     end
 
     private
 
     attr_reader :stanza, :legislature
+
+    def github_data_url
+      GITHUB % [legislature.directory, stanza[:file]]
+    end
 
     def creation
       stanza[:create] || {}
