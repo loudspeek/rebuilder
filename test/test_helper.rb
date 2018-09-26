@@ -4,6 +4,7 @@ ENV['RACK_ENV'] = 'test'
 require 'minitest/autorun'
 require 'sidekiq/testing'
 require 'rack/test'
+require 'webmock/minitest'
 
 Sidekiq::Testing.fake!
 
@@ -20,6 +21,10 @@ class MiniTest::Spec
   def app
     Sinatra::Application
   end
+end
+
+def stub_pattern(regex, file)
+  stub_request(:get, regex).to_return(body: Pathname.new('test/fixtures') + file)
 end
 
 require 'vcr'
