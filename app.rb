@@ -169,6 +169,7 @@ class CreatePullRequestJob
   EXPECTED_FILES = ['ep-popolo-v1.0.json', 'unstable/positions.csv'].freeze
 
   def perform(branch, title, body_key)
+    logger.info("Begin PR #{title}")
     # The branch won't exist if there were no changes when the rebuild was run.
     unless branch_exists?(branch)
       warn "Couldn't find branch: #{branch}"
