@@ -21,5 +21,11 @@ describe 'Instructions' do
     it 'knows there is no gender source' do
       subject.source('gender').must_be_nil
     end
+
+    it 'handles a 400 result from morph' do
+      src = subject.source('official')
+      stub_request(:get, /api.morph.io/).to_return(status: 400)
+      src.fresh_data.must_be_nil
+    end
   end
 end

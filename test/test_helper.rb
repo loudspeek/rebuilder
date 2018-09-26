@@ -2,8 +2,9 @@
 
 ENV['RACK_ENV'] = 'test'
 require 'minitest/autorun'
-require 'sidekiq/testing'
+require 'pry'
 require 'rack/test'
+require 'sidekiq/testing'
 require 'webmock/minitest'
 
 Sidekiq::Testing.fake!
