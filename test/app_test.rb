@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'test_helper'
 
 describe 'Rebuilder' do
@@ -56,7 +57,7 @@ describe 'Rebuilder' do
     end
 
     it 'has the correct arguments' do
-      RebuilderJob.jobs.first['args'].must_equal %w(Thailand National-Legislative-Assembly gender-balance)
+      RebuilderJob.jobs.first['args'].must_equal %w[Thailand National-Legislative-Assembly gender-balance]
     end
 
     it 'confirms rebuild in response body' do
@@ -97,7 +98,7 @@ describe 'Rebuilder' do
       end
 
       it 'has the correct arguments' do
-        RebuilderJob.jobs.first['args'].must_equal %w(Thailand National-Legislative-Assembly gender-balance)
+        RebuilderJob.jobs.first['args'].must_equal %w[Thailand National-Legislative-Assembly gender-balance]
       end
 
       it 'confirms rebuild in response body' do

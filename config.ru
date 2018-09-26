@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require_relative './app'
 require 'sidekiq'
 require 'sidekiq/web'
