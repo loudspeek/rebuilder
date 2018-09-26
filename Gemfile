@@ -28,6 +28,10 @@ group :test do
   gem 'webmock'
 end
 
+group :development do
+  gem 'derailed'
+end
+
 # Report exceptions to rollbar.com
 gem 'oj', '~> 2.12.14'
 gem 'rollbar', '~> 2.13'
