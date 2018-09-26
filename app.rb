@@ -45,6 +45,7 @@ class RebuilderJob
   include Sidekiq::Worker
 
   def perform(country_slug, legislature_slug, source = nil)
+    logger.info("Begin #{country_slug}/#{legislature_slug}/#{source}")
     country = EveryPolitician.country(country_slug)
     legislature = country.legislature(legislature_slug)
 
@@ -282,7 +283,7 @@ helpers do
   def rebuild(country, legislature, source = nil)
     RebuilderJob.perform_async(country, legislature, source)
     message = "Queued rebuild for country=#{country} legislature=#{legislature} source=#{source}\n"
-    logger.warn(message)
+    logger.info(message.chomp)
     message
   end
 end
