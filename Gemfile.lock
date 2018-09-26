@@ -64,7 +64,7 @@ GEM
     netrc (0.11.0)
     octokit (4.12.0)
       sawyer (~> 0.8.0, >= 0.5.3)
-    oj (2.12.14)
+    oj (3.6.10)
     parallel (1.12.1)
     parser (2.5.1.2)
       ast (~> 2.4.0)
@@ -140,13 +140,13 @@ DEPENDENCIES
   minitest
   minitest-around
   octokit
-  oj (~> 2.12.14)
+  oj
   pry
   puma
   rack-test
   rake
   rest-client
-  rollbar (~> 2.13)
+  rollbar
   rubocop
   sidekiq
   sinatra
@@ -154,7 +154,7 @@ DEPENDENCIES
   webmock
 
 RUBY VERSION
-   ruby 2.3.3p222
+   ruby 2.4.4p296
 
 BUNDLED WITH
-   1.16.2
+   1.16.5

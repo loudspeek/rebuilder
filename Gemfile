@@ -3,7 +3,7 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo_name| "https://github.com/#{repo_name}.git" }
 
-ruby '2.3.3'
+ruby '2.4.4'
 
 gem 'activesupport', require: 'active_support'
 gem 'colorize'
@@ -33,5 +33,5 @@ group :development do
 end
 
 # Report exceptions to rollbar.com
-gem 'oj', '~> 2.12.14'
-gem 'rollbar', '~> 2.13'
+gem 'oj'
+gem 'rollbar'
