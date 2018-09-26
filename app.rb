@@ -49,7 +49,11 @@ class RebuilderJob
     legislature = country.legislature(legislature_slug)
 
     if source
-      src = EveryPolitician::Instructions.new(legislature).source(source)
+      unless src = EveryPolitician::Instructions.new(legislature).source(source)
+        logger.warn "No source for #{country_slug}/#{legislature_slug}/#{source}"
+        return
+      end
+
       if src.current_data.to_s.empty?
         logger.warn "No github data for #{country_slug}/#{legislature_slug}/#{source}"
         return
@@ -184,9 +188,8 @@ module EveryPolitician
     end
 
     def source(name)
-      Source.new(legislature: legislature, stanza: instructions[:sources].find do |src|
-        src[:create] && (src[:create][:from] == 'morph') && (src[:file].include? name)
-      end)
+      stanza = stanza(name) or return
+      Source.new(legislature: legislature, stanza: stanza)
     end
 
     private
@@ -203,6 +206,12 @@ module EveryPolitician
 
     def instructions
       JSON.parse(JSON5.parse(raw_instructions).to_json, symbolize_names: true)
+    end
+
+    def stanza(name)
+      instructions[:sources].find do |src|
+        src[:create] && (src[:create][:from] == 'morph') && (src[:file].include? name)
+      end
     end
   end
 
