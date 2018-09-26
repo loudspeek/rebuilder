@@ -198,7 +198,7 @@ module EveryPolitician
     end
 
     def raw_instructions
-      @raw ||= open(instructions_url).read
+      @raw_instructions ||= open(instructions_url).read
     end
 
     def instructions
@@ -218,7 +218,7 @@ module EveryPolitician
     def fresh_data
       return '' unless creation[:from].to_s == 'morph'
 
-      @fresh ||= MorphData.new(creation[:scraper]).query(creation[:query])
+      @fresh_data ||= MorphData.new(creation[:scraper]).query(creation[:query])
     end
 
     def current_data
