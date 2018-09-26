@@ -45,6 +45,7 @@ class RebuilderJob
   include Sidekiq::Worker
 
   def perform(country_slug, legislature_slug, source = nil)
+    logger.info("Begin #{country_slug}/#{legislature_slug}/#{source}")
     country = EveryPolitician.country(country_slug)
     legislature = country.legislature(legislature_slug)
 
