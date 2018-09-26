@@ -15,7 +15,6 @@ gem 'octokit'
 gem 'puma'
 gem 'rake'
 gem 'rest-client'
-gem 'rubocop'
 gem 'sidekiq'
 gem 'sinatra'
 
@@ -30,6 +29,7 @@ end
 
 group :development do
   gem 'derailed'
+  gem 'rubocop'
 end
 
 # Report exceptions to rollbar.com
