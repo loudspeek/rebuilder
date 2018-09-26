@@ -59,6 +59,11 @@ class RebuilderJob
         return
       end
 
+      if src.fresh_data.to_s.empty?
+        logger.warn "No source data for #{country_slug}/#{legislature_slug}/#{source}"
+        return
+      end
+
       if src.current_data == src.fresh_data
         logger.warn "No morph changes for #{country_slug}/#{legislature_slug}/#{source}"
         return
@@ -227,13 +232,13 @@ module EveryPolitician
     def fresh_data
       return '' unless creation[:from].to_s == 'morph'
 
-      @fresh_data ||= MorphData.new(creation[:scraper]).query(creation[:query])
+      @fresh_data ||= MorphData.new(creation[:scraper]).query(creation[:query]) rescue nil
     end
 
     def current_data
       @current ||= open(github_data_url).read
-    rescue
-      warn "Can't fetch current data from #{github_data_url}"
+    rescue => error
+      warn "Can't fetch current data from #{github_data_url}: #{error}"
       nil
     end
 
