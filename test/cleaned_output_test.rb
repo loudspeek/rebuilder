@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'test_helper'
 
 describe 'CleanedOutput' do
@@ -14,7 +15,7 @@ describe 'CleanedOutput' do
     subject do
       CleanedOutput.new(
         output:     'key=secret pw=opensesame',
-        redactions: %w(secret opensesame)
+        redactions: %w[secret opensesame]
       )
     end
 

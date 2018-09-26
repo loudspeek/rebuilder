@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'bundler'
 Bundler.require
 Dotenv.load
@@ -74,7 +75,7 @@ class RebuilderJob
 
     cleaned_output = CleanedOutput.new(output: output, redactions: [ENV['MORPH_API_KEY']])
 
-    unless child_status && child_status.success?
+    unless child_status&.success?
       Rollbar.error("Failed to build #{country.name} - #{legislature.name}\n\n#{cleaned_output}")
       return
     end
@@ -216,6 +217,7 @@ module EveryPolitician
     # TODO: handle all the other types of source
     def fresh_data
       return '' unless creation[:from].to_s == 'morph'
+
       @fresh ||= MorphData.new(creation[:scraper]).query(creation[:query])
     end
 
