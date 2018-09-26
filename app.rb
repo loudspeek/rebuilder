@@ -40,6 +40,32 @@ EVERYPOLITICIAN_DATA_REPO = ENV.fetch(
   'everypolitician/everypolitician-data'
 )
 
+class Build
+  def initialize(legislature, source_name = nil)
+    @legislature = legislature
+    @source_name = source_name
+  end
+
+  def skip_reason
+    return 'No source' unless source
+    return 'No github data' if source.current_data.to_s.empty?
+    return 'No morph data' if source.fresh_data.to_s.empty?
+    return 'No morph changes' if source.current_data == source.fresh_data
+  end
+
+  private
+
+  attr_reader :legislature, :source_name
+
+  def instructions
+    @instructions ||= EveryPolitician::Instructions.new(legislature)
+  end
+
+  def source
+    @source ||= instructions.source(source_name)
+  end
+end
+
 # Rebuild a given country's legislature information
 class RebuilderJob
   include Sidekiq::Worker
@@ -49,24 +75,12 @@ class RebuilderJob
     country = EveryPolitician.country(country_slug)
     legislature = country.legislature(legislature_slug)
 
+    # If we're rebuilding a single source, check if we can short-circuit
+    # before checking out the repo, and creating a branch, etc.
+    # This can be done in seconds rather than minutes
     if source
-      unless src = EveryPolitician::Instructions.new(legislature).source(source)
-        logger.warn "No source for #{country_slug}/#{legislature_slug}/#{source}"
-        return
-      end
-
-      if src.current_data.to_s.empty?
-        logger.warn "No github data for #{country_slug}/#{legislature_slug}/#{source}"
-        return
-      end
-
-      if src.fresh_data.to_s.empty?
-        logger.warn "No source data for #{country_slug}/#{legislature_slug}/#{source}"
-        return
-      end
-
-      if src.current_data == src.fresh_data
-        logger.warn "No morph changes for #{country_slug}/#{legislature_slug}/#{source}"
+      if skip_reason = Build.new(legislature, source).skip_reason
+        logger.warn(skip_reason)
         return
       end
     end
