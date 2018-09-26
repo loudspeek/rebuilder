@@ -23,13 +23,13 @@ group :test do
   gem 'minitest-around'
   gem 'pry'
   gem 'rack-test'
+  gem 'rubocop'
   gem 'vcr'
   gem 'webmock'
 end
 
 group :development do
   gem 'derailed'
-  gem 'rubocop'
 end
 
 # Report exceptions to rollbar.com
