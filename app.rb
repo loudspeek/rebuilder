@@ -80,7 +80,7 @@ class RebuilderJob
     # This can be done in seconds rather than minutes
     if source
       if skip_reason = Build.new(legislature, source).skip_reason
-        logger.warn(skip_reason)
+        logger.info("Skip #{country_slug}/#{legislature_slug}/#{source}: #{skip_reason}")
         return
       end
     end
