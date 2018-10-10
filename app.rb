@@ -86,6 +86,7 @@ class RebuilderJob
     end
 
     branch = [country_slug, legislature_slug, Time.now.to_i].join('-').parameterize
+    source_name_with_default = source || 'all sources'
 
     output, child_status = run(
       "#{File.join(__dir__, 'bin/everypolitician-data-builder')} 2>&1",
@@ -100,10 +101,9 @@ class RebuilderJob
     cleaned_output = CleanedOutput.new(output: output, redactions: [ENV['MORPH_API_KEY']])
 
     unless child_status&.success?
-      Rollbar.error("Failed to build #{country.name} - #{legislature.name}\n\n#{cleaned_output}")
+      Rollbar.error("Failed to build #{country.name} - #{legislature.name} — #{source_name_with_default}\n\n#{cleaned_output}")
       return
     end
-    source_name_with_default = source || 'all sources'
     title = "#{country.name} (#{legislature.name}): refresh #{source_name_with_default}"
     body = "Automated refresh of #{source_name_with_default} for #{country.name} - #{legislature.name}" \
       "\n\n#### Output\n\n```\n#{cleaned_output}\n```"
