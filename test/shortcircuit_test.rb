@@ -26,5 +26,9 @@ describe Build do
       stub_request(:get, /api.morph.io/).to_return(status: 400)
       Build.new(legislature, 'official').skip_reason.must_equal 'No morph data'
     end
+
+    it 'rebuilds a non-morph source' do
+      Build.new(legislature, 'gender').skip_reason.must_be_nil
+    end
   end
 end

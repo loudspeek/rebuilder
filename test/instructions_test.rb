@@ -18,8 +18,8 @@ describe 'Instructions' do
       src.send(:github_data_url).must_include 'sources/morph/wikidata.csv'
     end
 
-    it 'knows there is no gender source' do
-      subject.source('gender').must_be_nil
+    it 'knows gender is not a morph-based source' do
+      subject.source('gender').morph?.must_equal false
     end
 
     it 'handles a 400 result from morph' do

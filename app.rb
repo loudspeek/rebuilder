@@ -48,6 +48,7 @@ class Build
 
   def skip_reason
     return 'No source' unless source
+    return unless source.morph?
     return 'No github data' if source.current_data.to_s.empty?
     return 'No morph data' if source.fresh_data.to_s.empty?
     return 'No morph changes' if source.current_data == source.fresh_data
@@ -230,8 +231,8 @@ module EveryPolitician
     end
 
     def stanza(name)
-      instructions[:sources].find do |src|
-        src[:create] && (src[:create][:from] == 'morph') && (src[:file].include? name)
+      instructions[:sources].select { |src| src[:create] }.find do |src|
+        src[:file].include? name
       end
     end
   end
@@ -244,9 +245,13 @@ module EveryPolitician
       @legislature = legislature
     end
 
+    def morph?
+      creation[:from].to_s == 'morph'
+    end
+
     # TODO: handle all the other types of source
     def fresh_data
-      return '' unless creation[:from].to_s == 'morph'
+      return '' unless morph?
 
       @fresh_data ||= MorphData.new(creation[:scraper]).query(creation[:query]) rescue nil
     end
