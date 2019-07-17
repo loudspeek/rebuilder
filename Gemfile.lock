@@ -20,7 +20,6 @@ GEM
     coderay (1.1.2)
     colorize (0.8.1)
     concurrent-ruby (1.1.4)
-    connection_pool (2.2.2)
     crack (0.4.3)
       safe_yaml (~> 1.0.0)
     derailed (0.1.0)
@@ -58,13 +57,11 @@ GEM
     minitest (5.11.3)
     minitest-around (0.5.0)
       minitest (~> 5.0)
-    multi_json (1.13.1)
     multipart-post (2.0.0)
     mustermann (1.0.3)
     netrc (0.11.0)
     octokit (4.13.0)
       sawyer (~> 0.8.0, >= 0.5.3)
-    oj (3.7.8)
     parallel (1.13.0)
     parser (2.6.0.0)
       ast (~> 2.4.0)
@@ -81,14 +78,11 @@ GEM
       rack (>= 1.0, < 3)
     rainbow (3.0.0)
     rake (12.3.2)
-    redis (4.1.0)
     require_all (2.0.0)
     rest-client (2.0.2)
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
-    rollbar (2.18.2)
-      multi_json
     rubocop (0.63.1)
       jaro_winkler (~> 1.5.1)
       parallel (~> 1.10)
@@ -102,16 +96,13 @@ GEM
     sawyer (0.8.1)
       addressable (>= 2.3.5, < 2.6)
       faraday (~> 0.8, < 1.0)
-    sidekiq (5.2.5)
-      connection_pool (~> 2.2, >= 2.2.2)
-      rack (>= 1.5.0)
-      rack-protection (>= 1.5.0)
-      redis (>= 3.3.5, < 5)
     sinatra (2.0.5)
       mustermann (~> 1.0)
       rack (~> 2.0)
       rack-protection (= 2.0.5)
       tilt (~> 2.0)
+    sucker_punch (2.1.2)
+      concurrent-ruby (~> 1.0)
     thor (0.20.3)
     thread_safe (0.3.6)
     tilt (2.0.9)
@@ -141,16 +132,14 @@ DEPENDENCIES
   minitest
   minitest-around
   octokit
-  oj
   pry
   puma
   rack-test
   rake
   rest-client
-  rollbar
   rubocop
-  sidekiq
   sinatra
+  sucker_punch
   vcr
   webmock
 
@@ -158,4 +147,4 @@ RUBY VERSION
    ruby 2.4.4p296
 
 BUNDLED WITH
-   2.0.1
+   2.0.2

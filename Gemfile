@@ -15,7 +15,7 @@ gem 'octokit'
 gem 'puma'
 gem 'rake'
 gem 'rest-client'
-gem 'sidekiq'
+gem 'sucker_punch'
 gem 'sinatra'
 
 group :test do
@@ -31,7 +31,3 @@ end
 group :development do
   gem 'derailed'
 end
-
-# Report exceptions to rollbar.com
-gem 'oj'
-gem 'rollbar'
