@@ -3,7 +3,7 @@
 set -eo pipefail
 
 git() {
-  command git -c user.name=everypoliticianbot -c user.email=team@everypolitician.org "$@"
+  command git -c user.name=loudspeek-bot -c user.email=gh-bot@loudspeek.cc "$@"
 }
 
 # Unset bundler environment variables so it uses the correct Gemfile etc.
@@ -14,8 +14,8 @@ unset RUBYLIB
 unset NOKOGIRI_USE_SYSTEM_LIBRARIES
 
 setup-everypolitician-data() {
-  git clone --quiet --depth=1 "$GIT_CLONE_URL" everypolitician-data
-  cd everypolitician-data
+  git clone --quiet --depth=1 "$GIT_CLONE_URL" representa
+  cd representa
   git checkout -b "$BRANCH_NAME"
   bundle install --quiet --jobs 4 --without test
 }
