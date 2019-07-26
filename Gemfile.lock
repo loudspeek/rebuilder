@@ -1,30 +1,103 @@
 GIT
+  remote: https://github.com/everypolitician/close_old_pull_requests.git
+  revision: 9b85e4961c5335063cc00bba11aab00c5ea1c0ec
+  specs:
+    close_old_pull_requests (0.1.0)
+      octokit (~> 4.3)
+
+GIT
+  remote: https://github.com/everypolitician/everypolitician-dataview-terms.git
+  revision: fefa4e9b9d1d6544337f4432b9af95a1ea456a49
+  specs:
+    everypolitician-dataview-terms (0.0.3)
+      everypolitician-popolo
+
+GIT
   remote: https://github.com/everypolitician/everypolitician-popolo.git
   revision: fc3515339ceb15c5dbd1238e2cda4acfcd6f2382
   specs:
     everypolitician-popolo (0.9.0)
       require_all
 
+GIT
+  remote: https://github.com/everypolitician/everypolitician-pull_request.git
+  revision: 12c35540813f200189f5ccb5beea7ce0bbe18084
+  specs:
+    everypolitician-pull_request (0.5.0)
+      activesupport
+      everypolitician-popolo
+      octokit (~> 4.13)
+      require_all
+
+GIT
+  remote: https://github.com/everypolitician/facebook_username_extractor.git
+  revision: fdb65615a5a513bb2ae8391aad9e2a5e76f4503d
+  specs:
+    facebook_username_extractor (0.3.0)
+
+GIT
+  remote: https://github.com/everypolitician/field_serializer.git
+  revision: 07e89a97eebe4e85ec23f46e04c7e061ac0fe166
+  specs:
+    field_serializer (0.3.0)
+
+GIT
+  remote: https://github.com/everypolitician/twitter_username_extractor.git
+  revision: cc0aebc0ac8724f2d32ffba8426489ca7b1d92dd
+  specs:
+    twitter_username_extractor (0.2.0)
+
+GIT
+  remote: https://github.com/everypolitician/wikisnakker.git
+  revision: 72dbb8b13c9ec1c8512974fa8d86d93b01b90a15
+  specs:
+    wikisnakker (0.9.1)
+      require_all
+      yajl-ruby
+
+GIT
+  remote: https://github.com/tmtmtmtm/csv_to_popolo.git
+  revision: 257f65f516120f29b24c79f8df7058ce80c05252
+  specs:
+    csv_to_popolo (0.31.0)
+      facebook_username_extractor
+      json
+      rcsv
+      twitter_username_extractor
+
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (5.2.2)
+    activesupport (5.2.3)
       concurrent-ruby (~> 1.0, >= 1.0.2)
       i18n (>= 0.7, < 2)
       minitest (~> 5.1)
       tzinfo (~> 1.1)
-    addressable (2.5.2)
+    addressable (2.6.0)
       public_suffix (>= 2.0.2, < 4.0)
     ast (2.4.0)
     benchmark-ips (2.7.2)
     coderay (1.1.2)
     colorize (0.8.1)
-    concurrent-ruby (1.1.4)
+    concurrent-ruby (1.1.5)
     crack (0.4.3)
       safe_yaml (~> 1.0.0)
+    csvlint (0.4.0)
+      activesupport
+      addressable
+      colorize
+      escape_utils
+      mime-types
+      net-http-persistent (< 3.0)
+      open_uri_redirections
+      rack
+      thor
+      typhoeus
+      uri_template
+    deep_merge (1.2.1)
     derailed (0.1.0)
       derailed_benchmarks
-    derailed_benchmarks (1.3.5)
+    derailed_benchmarks (1.3.6)
       benchmark-ips (~> 2)
       get_process_mem (~> 0)
       heapy (~> 0)
@@ -32,102 +105,136 @@ GEM
       rack (>= 1)
       rake (> 10, < 13)
       thor (~> 0.19)
-    domain_name (0.5.20180417)
+    domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
-    dotenv (2.6.0)
+    dotenv (2.7.4)
+    escape_utils (1.2.1)
+    ethon (0.12.0)
+      ffi (>= 1.3.0)
     everypolitician (0.20.0)
       everypolitician-popolo (>= 0.8.0)
       require_all
     faraday (0.15.4)
       multipart-post (>= 1.2, < 3)
-    get_process_mem (0.2.3)
-    hashdiff (0.3.8)
+    ffi (1.11.1)
+    fuzzy_match (2.1.0)
+    get_process_mem (0.2.4)
+      ffi (~> 1.0)
+    hashdiff (1.0.0)
     heapy (0.1.4)
     http-cookie (1.0.3)
       domain_name (~> 0.5)
-    i18n (1.5.3)
+    i18n (1.6.0)
       concurrent-ruby (~> 1.0)
-    jaro_winkler (1.5.2)
+    jaro_winkler (1.5.3)
+    json (2.2.0)
     json5 (0.0.1)
-    memory_profiler (0.9.12)
+    memory_profiler (0.9.14)
     method_source (0.9.2)
     mime-types (3.2.2)
       mime-types-data (~> 3.2015)
-    mime-types-data (3.2018.0812)
+    mime-types-data (3.2019.0331)
     minitest (5.11.3)
     minitest-around (0.5.0)
       minitest (~> 5.0)
-    multipart-post (2.0.0)
+    multipart-post (2.1.1)
     mustermann (1.0.3)
+    net-http-persistent (2.9.4)
     netrc (0.11.0)
-    octokit (4.13.0)
+    nio4r (2.4.0)
+    octokit (4.14.0)
       sawyer (~> 0.8.0, >= 0.5.3)
-    parallel (1.13.0)
-    parser (2.6.0.0)
+    open_uri_redirections (0.2.1)
+    parallel (1.17.0)
+    parser (2.6.3.0)
       ast (~> 2.4.0)
-    powerpack (0.1.2)
     pry (0.12.2)
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
-    public_suffix (3.0.3)
-    puma (3.12.0)
-    rack (2.0.6)
+    public_suffix (3.1.1)
+    puma (4.0.1)
+      nio4r (~> 2.0)
+    rack (2.0.7)
     rack-protection (2.0.5)
       rack
     rack-test (1.1.0)
       rack (>= 1.0, < 3)
     rainbow (3.0.0)
-    rake (12.3.2)
-    require_all (2.0.0)
+    rake (12.3.3)
+    rb-fsevent (0.10.3)
+    rb-inotify (0.10.0)
+      ffi (~> 1.0)
+    rcsv (0.3.1)
+    require_all (1.5.0)
     rest-client (2.0.2)
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
-    rubocop (0.63.1)
+    rubocop (0.73.0)
       jaro_winkler (~> 1.5.1)
       parallel (~> 1.10)
-      parser (>= 2.5, != 2.5.1.1)
-      powerpack (~> 0.1)
+      parser (>= 2.6)
       rainbow (>= 2.2.2, < 4.0)
       ruby-progressbar (~> 1.7)
-      unicode-display_width (~> 1.4.0)
-    ruby-progressbar (1.10.0)
-    safe_yaml (1.0.4)
-    sawyer (0.8.1)
-      addressable (>= 2.3.5, < 2.6)
-      faraday (~> 0.8, < 1.0)
+      unicode-display_width (>= 1.4.0, < 1.7)
+    ruby-progressbar (1.10.1)
+    safe_yaml (1.0.5)
+    sass (3.7.4)
+      sass-listen (~> 4.0.0)
+    sass-listen (4.0.0)
+      rb-fsevent (~> 0.9, >= 0.9.4)
+      rb-inotify (~> 0.9, >= 0.9.7)
+    sawyer (0.8.2)
+      addressable (>= 2.3.5)
+      faraday (> 0.8, < 2.0)
     sinatra (2.0.5)
       mustermann (~> 1.0)
       rack (~> 2.0)
       rack-protection (= 2.0.5)
       tilt (~> 2.0)
+    slop (3.6.0)
     sucker_punch (2.1.2)
       concurrent-ruby (~> 1.0)
     thor (0.20.3)
     thread_safe (0.3.6)
     tilt (2.0.9)
+    typhoeus (1.3.1)
+      ethon (>= 0.9.0)
     tzinfo (1.2.5)
       thread_safe (~> 0.1)
     unf (0.1.4)
       unf_ext
-    unf_ext (0.0.7.5)
-    unicode-display_width (1.4.1)
-    vcr (4.0.0)
-    webmock (3.5.1)
+    unf_ext (0.0.7.6)
+    unicode-display_width (1.6.0)
+    unicode_utils (1.4.0)
+    uri_template (0.7.0)
+    vcr (5.0.0)
+    webmock (3.6.0)
       addressable (>= 2.3.6)
       crack (>= 0.3.2)
-      hashdiff
+      hashdiff (>= 0.4.0, < 2.0.0)
+    yajl-ruby (1.4.1)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   activesupport
+  close_old_pull_requests!
   colorize
+  csv_to_popolo!
+  csvlint
+  deep_merge
   derailed
   dotenv
   everypolitician
+  everypolitician-dataview-terms!
   everypolitician-popolo!
+  everypolitician-pull_request!
+  facebook_username_extractor (~> 0.3.0)!
+  field_serializer!
+  fuzzy_match
+  json
   json5
   minitest
   minitest-around
@@ -136,12 +243,20 @@ DEPENDENCIES
   puma
   rack-test
   rake
+  rcsv
+  require_all (~> 1.0)
   rest-client
   rubocop
+  sass
   sinatra
+  slop (~> 3.6.0)
   sucker_punch
+  twitter_username_extractor!
+  unicode_utils
   vcr
   webmock
+  wikisnakker!
+  yajl-ruby
 
 RUBY VERSION
    ruby 2.4.4p296

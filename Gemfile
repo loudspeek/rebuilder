@@ -45,7 +45,6 @@ gem 'facebook_username_extractor', '~> 0.3.0', github: 'everypolitician/facebook
 gem 'field_serializer', github: 'everypolitician/field_serializer'
 gem 'fuzzy_match'
 gem 'json'
-gem 'pry'
 gem 'rcsv'
 gem 'require_all', '~> 1.0'
 gem 'sass'
