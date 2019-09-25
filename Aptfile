@@ -4,3 +4,4 @@ ruby-dev
 zlib1g-dev
 liblzma-dev
 libc6-dev
+linux-virtual
