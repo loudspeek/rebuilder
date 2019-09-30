@@ -8,9 +8,9 @@ git() {
 
 # Unset bundler environment variables so it uses the correct Gemfile etc.
 unset BUNDLE_GEMFILE
-unset BUNDLE_BIN_PATH
-unset RUBYOPT
-unset RUBYLIB
+#unset BUNDLE_BIN_PATH
+#unset RUBYOPT
+#unset RUBYLIB
 unset NOKOGIRI_USE_SYSTEM_LIBRARIES
 
 setup-everypolitician-data() {
