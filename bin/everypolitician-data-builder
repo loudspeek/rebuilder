@@ -17,7 +17,8 @@ setup-everypolitician-data() {
   git clone --quiet --depth=1 "$GIT_CLONE_URL" representa
   cd representa
   git checkout -b "$BRANCH_NAME"
-  gem install bundler
+  gem install bundler --silent
+  gem update --system --silent
   bundle install --quiet --jobs 4 --without test
 }
 
