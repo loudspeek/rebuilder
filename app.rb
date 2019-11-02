@@ -3,6 +3,7 @@
 require 'bundler'
 Bundler.require
 Dotenv.load
+set :bind, '0.0.0.0'
 
 require 'active_support/core_ext'
 require 'English'
